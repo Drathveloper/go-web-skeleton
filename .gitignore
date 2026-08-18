@@ -4,6 +4,9 @@ bin
 reports
 tools
 
+# go build ./cmd/scaffold drops the binary in the repo root.
+/scaffold
+
 # Real configuration is never committed: the application.example.* files are
 # the templates, credentials come from the environment.
 cmd/server/config/application.yaml
