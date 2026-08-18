@@ -1,0 +1,65 @@
+{
+	"mocks": {
+		"mocks/mock_common_middleware_session.go": {
+			"checksum": "mbfeAAv2iKrsELaE03Qp9Q==",
+			"source_checksum": "Bprx67+fZ5NKuOWICVYXeA==",
+			"mode": "SOURCE_MODE",
+			"source_mode_runner": {
+				"source": "common/http/middleware/session.go",
+				"destination": "mocks/mock_common_middleware_session.go",
+				"package": "mocks"
+			}
+		},
+		"mocks/mock_security_repository_redis_session.go": {
+			"checksum": "qFgCQ65F1Culr2KXvQQEMA==",
+			"source_checksum": "8gg64tkSV4OnOgtn5cR2rQ==",
+			"mode": "SOURCE_MODE",
+			"source_mode_runner": {
+				"source": "security/repository/redis/session.go",
+				"destination": "mocks/mock_security_repository_redis_session.go",
+				"package": "mocks",
+				"mock_names": "SessionConfigProvider=MockRedisSessionConfigProvider"
+			}
+		},
+		"mocks/mock_security_service_authentication.go": {
+			"checksum": "YdNKJrdJCtsAp+WsxQO3Dw==",
+			"source_checksum": "76GGycByhBHwMUoX+IQ3tA==",
+			"mode": "SOURCE_MODE",
+			"source_mode_runner": {
+				"source": "security/service/authentication.go",
+				"destination": "mocks/mock_security_service_authentication.go",
+				"package": "mocks"
+			}
+		},
+		"mocks/mock_security_service_session.go": {
+			"checksum": "ajjT/BPuiQNBxaYl1VP05w==",
+			"source_checksum": "w21g6E7xMVS5e0SIoWDsGQ==",
+			"mode": "SOURCE_MODE",
+			"source_mode_runner": {
+				"source": "security/service/session.go",
+				"destination": "mocks/mock_security_service_session.go",
+				"package": "mocks"
+			}
+		},
+		"mocks/mock_security_service_user_management.go": {
+			"checksum": "jUa2G5+Y3Q3928cOdj00WQ==",
+			"source_checksum": "nN+cI99YVpFvqKd1FFivgw==",
+			"mode": "SOURCE_MODE",
+			"source_mode_runner": {
+				"source": "security/service/user_management.go",
+				"destination": "mocks/mock_security_service_user_management.go",
+				"package": "mocks"
+			}
+		},
+		"mocks/redis_client.go": {
+			"checksum": "bGfSW3gdsDUMv46JtmPh9g==",
+			"mode": "REFLECT_MODE",
+			"reflect_mode_runner": {
+				"package_name": "github.com/redis/go-redis/v9",
+				"interfaces": "UniversalClient",
+				"destination": "mocks/redis_client.go",
+				"package": "mocks"
+			}
+		}
+	}
+}

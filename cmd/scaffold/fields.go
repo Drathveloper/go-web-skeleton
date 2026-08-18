@@ -155,13 +155,18 @@ func ParseField(spec string) (Field, error) {
 		Required: required,
 	}
 
-	if target, isRef := strings.CutPrefix(declared, TypeRef+"="); isRef {
-		if target == "" {
-			return Field{}, fmt.Errorf("%w: %q", ErrRefNeedsEntity, spec)
-		}
+	target, isRef := strings.CutPrefix(declared, TypeRef+"=")
+	switch {
+	case isRef && target != "":
 		field.Type = TypeRef
 		field.RefEntity = NewNames(toSnake(target), "")
-	} else {
+	case isRef, declared == TypeRef:
+		// Both `name:ref=` and a bare `name:ref` name no entity. The bare form
+		// used to be accepted, because "ref" is also the type identifier: it
+		// produced a foreign key to an entity whose every spelling was the
+		// empty string, and the generated wiring referred to container.Service.
+		return Field{}, fmt.Errorf("%w: %q", ErrRefNeedsEntity, spec)
+	default:
 		field.Type = declared
 	}
 

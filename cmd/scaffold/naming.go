@@ -143,7 +143,9 @@ func pluralizeWord(word string) string {
 	switch {
 	case word == "":
 		return word
-	case strings.HasSuffix(word, "y") && !isVowel(word[len(word)-2]):
+	// The length guard is not hypothetical: a one letter name ending in y
+	// would index before the start of the string and panic.
+	case len(word) > 1 && strings.HasSuffix(word, "y") && !isVowel(word[len(word)-2]):
 		return word[:len(word)-1] + "ies"
 	case strings.HasSuffix(word, "s"), strings.HasSuffix(word, "x"),
 		strings.HasSuffix(word, "z"), strings.HasSuffix(word, "ch"),

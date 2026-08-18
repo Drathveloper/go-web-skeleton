@@ -238,13 +238,7 @@ func removeExampleReferences(out string) error {
 		if err != nil {
 			return fmt.Errorf("drop example failed: %w", err)
 		}
-		kept := make([]string, 0)
-		for line := range strings.SplitSeq(string(content), "\n") {
-			if isExampleReference(line) {
-				continue
-			}
-			kept = append(kept, line)
-		}
+		kept := stripExampleLines(strings.Split(string(content), "\n"))
 		if err = os.WriteFile(target, []byte(strings.Join(kept, "\n")), 0o600); err != nil {
 			return fmt.Errorf("drop example failed: %w", err)
 		}
@@ -258,6 +252,36 @@ var exampleIdentifiers = []string{ //nolint:gochecknoglobals
 	"Item", "ItemCategory", "examplerepository", "exampleservice",
 	"examplehandler", "exampleentity", `"item.title"`, `"item_category.title"`,
 	`"example.title"`, "/item", "/item-category",
+}
+
+// stripExampleLines removes the generated lines, and in a template removes the
+// whole element rather than the line that named it.
+//
+// A sidebar entry is an <a> spanning four lines and only the first and third
+// mention the module; dropping those by themselves leaves a dangling <svg> and
+// </a> behind — markup that still compiles and still renders, as two icons
+// pointing nowhere.
+func stripExampleLines(lines []string) []string {
+	kept := make([]string, 0, len(lines))
+	skippingElement := false
+	for _, line := range lines {
+		if skippingElement {
+			if strings.Contains(line, "</a>") {
+				skippingElement = false
+			}
+			continue
+		}
+		if !isExampleReference(line) {
+			kept = append(kept, line)
+			continue
+		}
+		// An opening tag that is not closed on the same line takes its whole
+		// element with it.
+		if strings.Contains(line, "<a ") && !strings.Contains(line, "</a>") {
+			skippingElement = true
+		}
+	}
+	return kept
 }
 
 // isExampleReference decides whether a line was generated for the example

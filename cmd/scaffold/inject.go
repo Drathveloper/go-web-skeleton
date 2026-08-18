@@ -44,14 +44,18 @@ func (i Injection) Apply() error {
 	markerLine := lines[markerIndex]
 	indent := markerLine[:len(markerLine)-len(strings.TrimLeft(markerLine, " \t"))]
 
-	existing := string(content)
+	existing := make(map[string]bool, len(lines))
+	for _, line := range lines {
+		existing[normalizeInjected(line)] = true
+	}
+
 	pending := make([]string, 0, len(i.Lines))
 	for _, line := range i.Lines {
 		if line == "" {
 			pending = append(pending, "")
 			continue
 		}
-		if strings.Contains(existing, indent+line+"\n") {
+		if existing[normalizeInjected(line)] {
 			continue
 		}
 		pending = append(pending, indent+line)
@@ -83,4 +87,16 @@ func (i Injection) Apply() error {
 		return fmt.Errorf("inject into %s failed: %w", i.Path, err)
 	}
 	return nil
+}
+
+// normalizeInjected reduces a line to what makes it the same line for the
+// purpose of not inserting it twice.
+//
+// Comparing the raw text does not work: the reformat step above realigns the
+// struct fields around the one just inserted, so the inserted line comes back
+// padded with a different number of spaces than the generator produced. The
+// next run would not recognise it and would add it again, and a struct with
+// the same field declared twice does not compile.
+func normalizeInjected(line string) string {
+	return strings.Join(strings.Fields(line), " ")
 }
