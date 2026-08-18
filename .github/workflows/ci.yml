@@ -1,0 +1,14 @@
+name: Go Web Skeleton CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  run-service-ci:
+    name: Run Service CI
+    uses: Drathveloper/go-build-tools/.github/workflows/golang_lib_workflow.yml@master
+    secrets: inherit

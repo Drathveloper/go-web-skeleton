@@ -19,9 +19,7 @@ import (
 // setupMockDB puts go-sqlmock behind a real *gorm.DB, so the assertions below are
 // on the SQL GORM actually emits rather than on a hand written string.
 // one-method rdbms.PostgresClient exists for.
-//
-//nolint:ireturn // sqlmock.Sqlmock is an interface by design; this is the seam the
-func setupMockDB(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
+func setupMockDB(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) { //nolint:ireturn
 	t.Helper()
 
 	// sqlmock.QueryMatcherRegexp is the default matcher; it is stated explicitly

@@ -65,7 +65,8 @@ func NewUserManagement(service UserManagementService, eventPublisher EventPublis
 	}
 }
 
-func newUserCreatedEvent(actor string, request *dto.CreateUserProcessRequest, isSuccess bool) *eventdto.UserCreatedEvent {
+func newUserCreatedEvent(
+	actor string, request *dto.CreateUserProcessRequest, isSuccess bool) *eventdto.UserCreatedEvent {
 	return &eventdto.UserCreatedEvent{
 		ActorUsername: actor,
 		Username:      request.Username,

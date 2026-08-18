@@ -25,9 +25,7 @@ func (item) TableName() string {
 
 // sqlmock.Sqlmock is an interface by design: it is the handle the library hands
 // out to set expectations on.
-//
-//nolint:ireturn
-func setupMockDB(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
+func setupMockDB(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) { //nolint:ireturn
 	t.Helper()
 
 	sqlDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherRegexp))

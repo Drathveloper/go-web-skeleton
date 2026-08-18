@@ -17,7 +17,10 @@ import (
 	"github.com/Drathveloper/go-web-skeleton/common/constants"
 )
 
-const readConfigBaseErrMsg = "read config failed"
+const (
+	readConfigBaseErrMsg = "read config failed"
+	loadConfigBaseErrMsg = "load config failed"
+)
 
 const (
 	yamlConfigFilePath = "config/application.yaml"
@@ -67,14 +70,21 @@ func ReadConfig(fsys fs.FS) (*model.Configuration, error) {
 // deployment to whatever stale application.json sits next to it.
 func loadConfigFile(engine *koanf.Koanf, fsys fs.FS) error {
 	yamlErr := engine.Load(fsprovider.Provider(fsys, yamlConfigFilePath), yaml.Parser())
-	if yamlErr == nil || !errors.Is(yamlErr, fs.ErrNotExist) {
-		return yamlErr
+	if yamlErr == nil {
+		return nil
+	}
+	if !errors.Is(yamlErr, fs.ErrNotExist) {
+		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, loadConfigBaseErrMsg, yamlErr)
 	}
 	jsonErr := engine.Load(fsprovider.Provider(fsys, jsonConfigFilePath), json.Parser())
-	if jsonErr == nil || !errors.Is(jsonErr, fs.ErrNotExist) {
-		return jsonErr
+	if jsonErr == nil {
+		return nil
 	}
-	return fmt.Errorf("%w: tried %s and %s", errConfigFileNotFound, yamlConfigFilePath, jsonConfigFilePath)
+	if !errors.Is(jsonErr, fs.ErrNotExist) {
+		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, loadConfigBaseErrMsg, jsonErr)
+	}
+	return fmt.Errorf("%s: %w: tried %s and %s",
+		loadConfigBaseErrMsg, errConfigFileNotFound, yamlConfigFilePath, jsonConfigFilePath)
 }
 
 // transformOverrideVariable maps APP_SERVER__READ_TIMEOUT to
