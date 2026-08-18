@@ -4,12 +4,13 @@ import (
 	"golang.org/x/text/language"
 )
 
-const defaultLanguage = "en"
+// DefaultLanguage is the fallback used when no locale can be resolved.
+const DefaultLanguage = "en"
 
 func ParseAcceptLanguage(value string) string {
 	tags, _, err := language.ParseAcceptLanguage(value)
 	if err != nil {
-		return defaultLanguage
+		return DefaultLanguage
 	}
 	for _, tag := range tags {
 		b, _ := tag.Base()
@@ -17,5 +18,5 @@ func ParseAcceptLanguage(value string) string {
 			return b.String()
 		}
 	}
-	return defaultLanguage
+	return DefaultLanguage
 }

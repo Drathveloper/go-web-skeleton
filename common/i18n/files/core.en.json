@@ -20,6 +20,22 @@
       }
     }
   },
+  "home": {
+    "title": "Home",
+    "heading": "Welcome",
+    "subtitle": "Everything the skeleton ships with, ready to build on.",
+    "cards": {
+      "users": {
+        "title": "Users",
+        "text": "Accounts, roles and sessions are already wired up. Create the users your team needs and sign in with them.",
+        "action": "Manage users"
+      },
+      "scaffold": {
+        "title": "Add a module",
+        "text": "A full CRUD module, from the database entity to the listing screen, is one command away."
+      }
+    }
+  },
   "theme": {
     "label": "Theme",
     "light": "Light",
@@ -115,6 +131,10 @@
     "logout": {
       "title": "Log out",
       "confirm": "Are you sure you want to log out?"
+    },
+    "messages": {
+      "user_created": "User created successfully.",
+      "user_updated": "User updated successfully."
     }
   },
   "session": {
@@ -178,7 +198,8 @@
     "close": "Close",
     "required_hint": "Required field",
     "optional": "Optional",
-    "select_placeholder": "Select an option"
+    "select_placeholder": "Select an option",
+    "multiselect_hint": "Hold Ctrl or Cmd to select several."
   },
   "pagination": {
     "previous": "Previous",

@@ -20,6 +20,22 @@
       }
     }
   },
+  "home": {
+    "title": "Inicio",
+    "heading": "Bienvenido",
+    "subtitle": "Todo lo que trae el esqueleto, listo para construir encima.",
+    "cards": {
+      "users": {
+        "title": "Usuarios",
+        "text": "Las cuentas, los roles y las sesiones ya están montados. Crea los usuarios que necesite tu equipo y entra con ellos.",
+        "action": "Gestionar usuarios"
+      },
+      "scaffold": {
+        "title": "Añadir un módulo",
+        "text": "Un módulo CRUD completo, desde la entidad de base de datos hasta la pantalla de listado, está a un comando de distancia."
+      }
+    }
+  },
   "theme": {
     "label": "Tema",
     "light": "Claro",
@@ -115,6 +131,10 @@
     "logout": {
       "title": "Cerrar sesión",
       "confirm": "¿Seguro que quieres cerrar sesión?"
+    },
+    "messages": {
+      "user_created": "Usuario creado correctamente.",
+      "user_updated": "Usuario actualizado correctamente."
     }
   },
   "session": {
@@ -178,7 +198,8 @@
     "close": "Cerrar",
     "required_hint": "Campo obligatorio",
     "optional": "Opcional",
-    "select_placeholder": "Selecciona una opción"
+    "select_placeholder": "Selecciona una opción",
+    "multiselect_hint": "Mantén Ctrl o Cmd para seleccionar varias."
   },
   "pagination": {
     "previous": "Anterior",

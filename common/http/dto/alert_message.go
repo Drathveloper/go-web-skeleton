@@ -14,11 +14,14 @@ type AlertMessage struct {
 	Code    int
 }
 
-func NewErrorMsg(code int, title string, err error) AlertMessage {
-	message := ""
-	if err != nil {
-		message = err.Error()
-	}
+// NewErrorMsg builds a user-facing error alert.
+//
+// message must be safe to display: a generic, already-localized explanation.
+// It deliberately does not accept an error. Passing err.Error() straight to
+// the screen leaks driver text, SQL fragments, hostnames and internal paths
+// to whoever triggered the failure; the error belongs in the log, this string
+// belongs to the user.
+func NewErrorMsg(code int, title, message string) AlertMessage {
 	return AlertMessage{
 		Code:    code,
 		Title:   title,
@@ -27,11 +30,9 @@ func NewErrorMsg(code int, title string, err error) AlertMessage {
 	}
 }
 
-func NewWarningMsg(title string, err error) AlertMessage {
-	message := ""
-	if err != nil {
-		message = err.Error()
-	}
+// NewWarningMsg builds a user-facing warning alert. As with NewErrorMsg,
+// message must be safe to display and is not derived from an error.
+func NewWarningMsg(title, message string) AlertMessage {
 	return AlertMessage{
 		Title:   title,
 		Message: message,

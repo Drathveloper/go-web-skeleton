@@ -3,6 +3,7 @@ package mapper
 import (
 	"github.com/Drathveloper/go-web-skeleton/common/domain"
 	"github.com/Drathveloper/go-web-skeleton/common/http/dto"
+	"github.com/Drathveloper/go-web-skeleton/common/i18n"
 )
 
 func MapDataToViewResponse[T any](data *T, breadcrumbs []string, session *domain.Session) *dto.ViewResponse[T] {
@@ -18,9 +19,21 @@ func MapDataToViewResponse[T any](data *T, breadcrumbs []string, session *domain
 	}
 }
 
-func MapDomainErrorToViewResponse(code int, title string, err error) *dto.ViewResponse[any] {
+// MapDomainErrorToViewResponse builds the payload for the error page.
+//
+// It takes i18n keys, not text, and resolves them here: that way the error
+// page is localized like every other screen, and there is no signature a
+// caller could use to push a raw error onto it. Log the underlying error at
+// the call site; only these two keys reach the user.
+func MapDomainErrorToViewResponse(lang string, code int, titleKey, messageKey string) *dto.ViewResponse[any] {
+	if lang == "" {
+		lang = i18n.DefaultLanguage
+	}
 	return &dto.ViewResponse[any]{
-		Msgs: []dto.AlertMessage{dto.NewErrorMsg(code, title, err)},
+		Language: lang,
+		Msgs: []dto.AlertMessage{
+			dto.NewErrorMsg(code, i18n.LocalizeMessage(lang, titleKey), i18n.LocalizeMessage(lang, messageKey)),
+		},
 	}
 }
 

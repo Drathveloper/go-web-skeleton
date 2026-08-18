@@ -8,6 +8,7 @@ import (
 
 	"github.com/Drathveloper/go-web-skeleton/common/config"
 	"github.com/Drathveloper/go-web-skeleton/common/constants"
+	commondomain "github.com/Drathveloper/go-web-skeleton/common/domain"
 	"github.com/Drathveloper/go-web-skeleton/common/http/handler"
 	"github.com/Drathveloper/go-web-skeleton/common/http/middleware"
 	"github.com/Drathveloper/go-web-skeleton/common/http/static"
@@ -35,10 +36,40 @@ func InitializeRoutes(container *wire.Container) (*gin.Engine, error) {
 
 	webRouter := router.Group("")
 	{
+		// Order matters: LanguageHandler, CSRFHandler and every handler call
+		// helper.MustGetSession, which panics unless SessionHandler ran first.
+		webRouter.Use(middleware.SessionHandler(container.SessionService, container.Store))
+		webRouter.Use(middleware.CSRFHandler())
+		webRouter.Use(middleware.FlushSessionHandler())
 		webRouter.Use(middleware.LanguageHandler())
 
+		registerAuthenticationRoutes(webRouter, container)
+
 		// scaffold:routes:register
-		_ = container
 	}
 	return router, nil
+}
+
+// registerAuthenticationRoutes wires the auth screens.
+//
+// login and logout are deliberately public; everything under /auth/user is
+// not. In the source this whole group had no Authorize at all, so an
+// unauthenticated caller could POST /auth/user/new and grant itself the admin
+// role — the only route group in the application missing the check.
+func registerAuthenticationRoutes(router gin.IRouter, container *wire.Container) {
+	auth := router.Group("/auth")
+	{
+		auth.GET("/login", container.AuthenticationHandler.LoginView())
+		auth.POST("/login", container.AuthenticationHandler.LoginProcess())
+		auth.GET("/logout", container.AuthenticationHandler.LogoutProcess())
+
+		users := auth.Group("/user", middleware.Authorize(commondomain.AdminRole))
+		{
+			users.GET("", container.UserManagementHandler.ListUsersView())
+			users.GET("/new", container.UserManagementHandler.CreateUserView())
+			users.POST("/new", container.UserManagementHandler.CreateUserProcess())
+			users.GET("/:id/edit", container.UserManagementHandler.UpdateUserView())
+			users.POST("/:id/edit", container.UserManagementHandler.UpdateUserProcess())
+		}
+	}
 }
