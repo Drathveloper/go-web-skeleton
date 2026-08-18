@@ -12,7 +12,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Drathveloper/go-web-skeleton/common/config"
 	"github.com/Drathveloper/go-web-skeleton/common/config/model"
 	"github.com/Drathveloper/go-web-skeleton/common/constants"
 	"github.com/Drathveloper/go-web-skeleton/common/event"
@@ -26,17 +25,12 @@ const runBaseErrMsg = "run application server failed"
 func Run(fileSystem fs.FS, buildInfo *model.BuildInfo) error {
 	setupLogger()
 	slog.Info(strconv.Itoa(runtime.NumCPU()) + " core(s) are visible to the container")
-	slog.Info("loading env config")
-	err := config.LoadEnv(*buildInfo)
-	if err != nil {
-		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, runBaseErrMsg, err)
-	}
-	container, err := wire.Wire(fileSystem)
+	container, err := wire.Wire(fileSystem, *buildInfo)
 	if err != nil {
 		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, runBaseErrMsg, err)
 	}
 	configureLogger(container)
-	slog.Info("loaded env config", slog.String("env", config.Env.String()))
+	slog.Info("loaded env config", slog.String("env", container.Env.String()))
 	slog.Info("initializing database migration")
 	if err = runDatabaseMigrations(container); err != nil {
 		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, runBaseErrMsg, err)

@@ -7,13 +7,13 @@ import (
 )
 
 type PostgresConfig struct {
-	Host     string             `yaml:"host"     validate:"required,notblank"`
-	Database string             `yaml:"database" validate:"required,notblank"`
-	User     string             `yaml:"user"     validate:"required,notblank"`
-	Password string             `yaml:"password" validate:"required,notblank"`
-	SSL      PostgresSSLConfig  `yaml:"ssl"`
-	Pool     PostgresPoolConfig `yaml:"pool"`
-	Port     int                `yaml:"port"     validate:"required,notblank"`
+	Host     string             `koanf:"host"     validate:"required,notblank"`
+	Database string             `koanf:"database" validate:"required,notblank"`
+	User     string             `koanf:"user"     validate:"required,notblank"`
+	Password string             `koanf:"password" validate:"required,notblank"`
+	SSL      PostgresSSLConfig  `koanf:"ssl"`
+	Pool     PostgresPoolConfig `koanf:"pool"`
+	Port     int                `koanf:"port"     validate:"required,notblank"`
 }
 
 func (c PostgresConfig) String() string {
@@ -46,7 +46,7 @@ func (c PostgresConfig) String() string {
 }
 
 type PostgresSSLConfig struct {
-	Mode string `yaml:"mode" validate:"omitempty,oneof=disable allow prefer require verify-ca verify-full"`
+	Mode string `koanf:"mode" validate:"omitempty,oneof=disable allow prefer require verify-ca verify-full"`
 }
 
 func (c PostgresSSLConfig) String() string {
@@ -54,11 +54,11 @@ func (c PostgresSSLConfig) String() string {
 }
 
 type PostgresPoolConfig struct {
-	MaxConnections         int32         `yaml:"max_connections"          validate:"omitempty,gt=0"`
-	MaxIdleConnections     int32         `yaml:"max_idle_connections"     validate:"omitempty,gt=0"`
-	MinConnections         int32         `yaml:"min_connections"          validate:"omitempty,gte=0"`
-	MaxConnectionsLifetime time.Duration `yaml:"max_lifetime"`
-	MaxIdleTime            time.Duration `yaml:"max_idle_time"`
-	HealthCheckPeriod      time.Duration `yaml:"health_check_period"`
-	MaxConnLifetimeJitter  time.Duration `yaml:"max_conn_lifetime_jitter"`
+	MaxConnections         int32         `koanf:"max_connections"          validate:"omitempty,gt=0"`
+	MaxIdleConnections     int32         `koanf:"max_idle_connections"     validate:"omitempty,gt=0"`
+	MinConnections         int32         `koanf:"min_connections"          validate:"omitempty,gte=0"`
+	MaxConnectionsLifetime time.Duration `koanf:"max_lifetime"`
+	MaxIdleTime            time.Duration `koanf:"max_idle_time"`
+	HealthCheckPeriod      time.Duration `koanf:"health_check_period"`
+	MaxConnLifetimeJitter  time.Duration `koanf:"max_conn_lifetime_jitter"`
 }

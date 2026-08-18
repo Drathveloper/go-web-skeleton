@@ -30,6 +30,33 @@ route sits behind `Authorize(AdminRole)`, so without a seeded admin there is no
 way in, and a password baked into a template would ship to every project made
 from it.
 
+## Configuration
+
+The configuration file is `cmd/server/config/application.yaml`; when it does
+not exist the loader falls back to `application.json` (copy
+`application.example.json` instead of the YAML example if you prefer that
+format). Only a *missing* YAML file falls back: a malformed one aborts startup
+instead of silently switching to the JSON next to it.
+
+Any file value can be overridden per deployment with an environment variable:
+prefix `APP_`, double underscore for nesting, since the keys themselves
+contain single underscores.
+
+```bash
+APP_SERVER__READ_TIMEOUT=30s        # server.read_timeout
+APP_DATABASES__POSTGRES__PORT=15432 # databases.postgres.port
+```
+
+Loading is strict on purpose: an unknown key in the file — or an `APP_`
+variable with a typo, since it maps to a key the model does not have — aborts
+startup with an error naming it. A misspelled setting that is silently ignored
+already sat in a production config once; that failure mode is opted out of.
+
+Process-level settings (`PORT`, `GIN_MODE`, `ENVIRONMENT`, `SERVICE_NAME`,
+`ENABLE_TLS`, `TLS_CERT_FILE`, `TLS_KEY_FILE`, `SEED_ADMIN_USERNAME`,
+`SEED_ADMIN_PASSWORD`) keep their unprefixed names — they configure the
+process around the application, not values inside the file.
+
 ## Starting a project from this template
 
 ```bash

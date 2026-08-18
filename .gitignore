@@ -4,6 +4,7 @@ bin
 reports
 tools
 
-# Real configuration is never committed: cmd/server/config/application.example.yaml
-# is the template, credentials come from the environment.
+# Real configuration is never committed: the application.example.* files are
+# the templates, credentials come from the environment.
 cmd/server/config/application.yaml
+cmd/server/config/application.json

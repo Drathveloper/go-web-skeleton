@@ -31,11 +31,13 @@ var skippedDirs = map[string]bool{ //nolint:gochecknoglobals
 	".git": true, "bin": true, "reports": true, "tools": true, "node_modules": true,
 }
 
-// skippedFiles are the ones a new project must provide itself. application.yaml
-// in particular is deliberately absent so startup fails loudly rather than
-// running on a configuration inherited from the template.
+// skippedFiles are the ones a new project must provide itself. The real
+// configuration files (yaml, and json — the fallback format) are deliberately
+// absent so startup fails loudly rather than running on a configuration — or
+// worse, credentials — inherited from the template.
 var skippedFiles = map[string]bool{ //nolint:gochecknoglobals
 	filepath.Join("cmd", "server", "config", "application.yaml"): true,
+	filepath.Join("cmd", "server", "config", "application.json"): true,
 }
 
 type newFlags struct {

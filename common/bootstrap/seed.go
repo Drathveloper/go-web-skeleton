@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	commonconfig "github.com/Drathveloper/go-web-skeleton/common/config"
 	commondomain "github.com/Drathveloper/go-web-skeleton/common/domain"
 	"github.com/Drathveloper/go-web-skeleton/common/wire"
 	securitydomain "github.com/Drathveloper/go-web-skeleton/security/domain"
@@ -30,8 +29,8 @@ func seedAdministrator(ctx context.Context, container *wire.Container) error {
 		return nil
 	}
 
-	username := commonconfig.Env.SeedAdminUsername
-	password := commonconfig.Env.SeedAdminPassword
+	username := container.Env.SeedAdminUsername
+	password := container.Env.SeedAdminPassword
 	if username == "" || password == "" {
 		slog.Warn("no users exist and no seed administrator configured; " +
 			"set SEED_ADMIN_USERNAME and SEED_ADMIN_PASSWORD to create the first one")

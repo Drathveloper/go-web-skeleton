@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Drathveloper/go-web-skeleton/common/config"
 	"github.com/Drathveloper/go-web-skeleton/common/constants"
 	commondomain "github.com/Drathveloper/go-web-skeleton/common/domain"
 	"github.com/Drathveloper/go-web-skeleton/common/http/handler"
@@ -19,7 +18,7 @@ import (
 const initializeRoutesBaseErrMsg = "initialize routes failed"
 
 func InitializeRoutes(container *wire.Container) (*gin.Engine, error) {
-	gin.SetMode(config.Env.GinMode)
+	gin.SetMode(container.Env.GinMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(middleware.Logger(slog.Default()))

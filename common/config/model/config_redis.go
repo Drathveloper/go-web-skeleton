@@ -3,42 +3,42 @@ package model
 import "time"
 
 type RedisConfig struct {
-	Username        *string                 `yaml:"username"          validate:"omitempty,notblank"`
-	Password        *string                 `yaml:"password"          validate:"omitempty,notblank"`
-	TLS             *RedisTLSConfig         `yaml:"tls"`
-	RetryPolicy     *RedisRetryPolicyConfig `yaml:"retry_policy"`
-	Timeout         *RedisTimeoutConfig     `yaml:"timeout"`
-	Pool            *RedisPoolConfig        `yaml:"pool"`
-	Hosts           []string                `yaml:"hosts"             validate:"required"`
-	IsSingleCluster bool                    `yaml:"is_single_cluster"`
+	Username        *string                 `koanf:"username"          validate:"omitempty,notblank"`
+	Password        *string                 `koanf:"password"          validate:"omitempty,notblank"`
+	TLS             *RedisTLSConfig         `koanf:"tls"`
+	RetryPolicy     *RedisRetryPolicyConfig `koanf:"retry_policy"`
+	Timeout         *RedisTimeoutConfig     `koanf:"timeout"`
+	Pool            *RedisPoolConfig        `koanf:"pool"`
+	Hosts           []string                `koanf:"hosts"             validate:"required"`
+	IsSingleCluster bool                    `koanf:"is_single_cluster"`
 }
 
 type RedisTLSConfig struct {
-	CACertificate      *string `yaml:"ca_cert"`
-	ClientKey          *string `yaml:"client_key"`
-	ClientCertificate  *string `yaml:"client_cert"`
-	Enabled            bool    `yaml:"enabled"`
-	InsecureSkipVerify bool    `yaml:"insecure_skip_verify"`
+	CACertificate      *string `koanf:"ca_cert"`
+	ClientKey          *string `koanf:"client_key"`
+	ClientCertificate  *string `koanf:"client_cert"`
+	Enabled            bool    `koanf:"enabled"`
+	InsecureSkipVerify bool    `koanf:"insecure_skip_verify"`
 }
 
 type RedisRetryPolicyConfig struct {
-	MaxRetries      *int           `yaml:"max_retries"       validate:"omitempty,gte=0"`
-	MinRetryBackoff *time.Duration `yaml:"min_retry_backoff"`
-	MaxRetryBackoff *time.Duration `yaml:"max_retry_backoff"`
+	MaxRetries      *int           `koanf:"max_retries"       validate:"omitempty,gte=0"`
+	MinRetryBackoff *time.Duration `koanf:"min_retry_backoff"`
+	MaxRetryBackoff *time.Duration `koanf:"max_retry_backoff"`
 }
 
 type RedisTimeoutConfig struct {
-	DialTimeout  *time.Duration `yaml:"dial_timeout"`
-	ReadTimeout  *time.Duration `yaml:"read_timeout"`
-	WriteTimeout *time.Duration `yaml:"write_timeout"`
+	DialTimeout  *time.Duration `koanf:"dial_timeout"`
+	ReadTimeout  *time.Duration `koanf:"read_timeout"`
+	WriteTimeout *time.Duration `koanf:"write_timeout"`
 }
 
 type RedisPoolConfig struct {
-	MaxConnections        *int           `yaml:"max_connections"          validate:"omitempty,gt=0"`
-	MinIdleConnections    *int           `yaml:"min_idle_connections"     validate:"omitempty,gte=0"`
-	MaxIdleConnections    *int           `yaml:"max_idle_connections"     validate:"omitempty,gt=0"`
-	MaxActiveConnections  *int           `yaml:"max_active_connections"   validate:"omitempty,gte=0"`
-	Timeout               *time.Duration `yaml:"timeout"`
-	MaxConnectionIdleTime *time.Duration `yaml:"max_connection_idle_time"`
-	MaxConnectionLifetime *time.Duration `yaml:"max_connection_lifetime"`
+	MaxConnections        *int           `koanf:"max_connections"          validate:"omitempty,gt=0"`
+	MinIdleConnections    *int           `koanf:"min_idle_connections"     validate:"omitempty,gte=0"`
+	MaxIdleConnections    *int           `koanf:"max_idle_connections"     validate:"omitempty,gt=0"`
+	MaxActiveConnections  *int           `koanf:"max_active_connections"   validate:"omitempty,gte=0"`
+	Timeout               *time.Duration `koanf:"timeout"`
+	MaxConnectionIdleTime *time.Duration `koanf:"max_connection_idle_time"`
+	MaxConnectionLifetime *time.Duration `koanf:"max_connection_lifetime"`
 }

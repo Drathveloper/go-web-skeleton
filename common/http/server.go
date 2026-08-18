@@ -9,7 +9,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Drathveloper/go-web-skeleton/common/config"
 	"github.com/Drathveloper/go-web-skeleton/common/constants"
 	"github.com/Drathveloper/go-web-skeleton/common/http/routes"
 	"github.com/Drathveloper/go-web-skeleton/common/http/validation"
@@ -35,7 +34,7 @@ func Run(container *wire.Container, waitGroup *sync.WaitGroup, sigChan chan os.S
 		slog.Debug("registered route", slog.String("method", r.Method), slog.String("path", r.Path))
 	}
 	srv := http.Server{
-		Addr:              ":" + config.Env.Port,
+		Addr:              ":" + container.Env.Port,
 		Handler:           router,
 		ReadTimeout:       container.Store.GetServerReadTimeout(),
 		ReadHeaderTimeout: container.Store.GetServerReadHeaderTimeout(),
@@ -44,9 +43,9 @@ func Run(container *wire.Container, waitGroup *sync.WaitGroup, sigChan chan os.S
 		MaxHeaderBytes:    container.Store.GetServerMaxHeaderBytes(),
 	}
 	waitGroup.Go(func() {
-		if config.Env.EnableTLS {
+		if container.Env.EnableTLS {
 			slog.Info("starting https server")
-			if serverErr := srv.ListenAndServeTLS(config.Env.TLSCertFilePath, config.Env.TLSKeyFilePath); serverErr != nil {
+			if serverErr := srv.ListenAndServeTLS(container.Env.TLSCertFilePath, container.Env.TLSKeyFilePath); serverErr != nil {
 				logServerError(serverErr)
 			}
 		} else {

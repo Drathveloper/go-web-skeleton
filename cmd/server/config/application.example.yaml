@@ -1,10 +1,21 @@
-# Copy this file to cmd/server/config/application.yaml before running the server.
-# application.yaml is embedded into the binary and is git-ignored: it must never
-# hold production credentials in a committed file.
+# Copy this file to cmd/server/config/application.yaml before running the server
+# (or application.example.json to application.json — JSON is the fallback format
+# when no YAML exists). application.yaml is embedded into the binary and is
+# git-ignored: it must never hold production credentials in a committed file.
 #
-# This loader performs NO ${VAR} interpolation: common/config/reader_yaml.go
-# unmarshals the file verbatim. Only the process-level settings below are read
-# from the environment (common/config/model/env.go, caarlos0/env):
+# This loader performs NO ${VAR} interpolation: common/config/reader.go
+# unmarshals the file verbatim. Any value in it can be overridden per
+# deployment with an APP_-prefixed environment variable, double underscore for
+# nesting (the keys themselves contain single ones):
+#
+#   APP_SERVER__READ_TIMEOUT=30s        overrides server.read_timeout
+#   APP_DATABASES__POSTGRES__PORT=15432 overrides databases.postgres.port
+#
+# Loading is strict: an unknown key in this file, or an APP_ variable with a
+# typo, aborts startup naming it instead of being silently ignored.
+#
+# The process-level settings below keep their unprefixed names
+# (common/config/env.go):
 #
 #   SERVICE_NAME   service name reported in logs      (default go-web-skeleton)
 #   ENVIRONMENT    environment label                  (default dev)

@@ -1,0 +1,70 @@
+{
+  "server": {
+    "read_timeout": "10s",
+    "write_timeout": "10s",
+    "idle_timeout": "10s",
+    "max_header_bytes": 2048
+  },
+  "logging": {
+    "level": "DEBUG"
+  },
+  "security": {
+    "session": {
+      "ttl": 31536000,
+      "secure_cookie": true
+    }
+  },
+  "events": {
+    "buffer_size": 10000,
+    "worker_concurrency": 10,
+    "timeout": "30s",
+    "shutdown_timeout": "30s"
+  },
+  "databases": {
+    "postgres": {
+      "host": "localhost",
+      "port": 5432,
+      "database": "skeleton",
+      "user": "skeleton",
+      "password": "skeleton",
+      "ssl": {
+        "mode": "disable"
+      },
+      "pool": {
+        "max_connections": 5,
+        "min_connections": 1,
+        "max_lifetime": "30m",
+        "max_idle_time": "5m",
+        "health_check_period": "30s",
+        "max_conn_lifetime_jitter": "5m"
+      }
+    },
+    "redis": {
+      "hosts": [
+        "localhost:6379"
+      ],
+      "tls": {
+        "enabled": false
+      },
+      "retry_policy": {
+        "max_retries": 1,
+        "min_retry_backoff": "50ms",
+        "max_retry_backoff": "250ms"
+      },
+      "timeout": {
+        "dial_timeout": "200ms",
+        "read_timeout": "500ms",
+        "write_timeout": "500ms"
+      },
+      "pool": {
+        "max_connections": 10,
+        "timeout": "5s",
+        "min_idle_connections": 1,
+        "max_idle_connections": 5,
+        "max_active_connections": 10,
+        "max_connection_idle_time": "5m",
+        "max_connection_lifetime": "30m"
+      }
+    }
+  }
+}

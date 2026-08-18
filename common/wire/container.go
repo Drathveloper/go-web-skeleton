@@ -1,6 +1,10 @@
 package wire
 
-import "io/fs"
+import (
+	"io/fs"
+
+	"github.com/Drathveloper/go-web-skeleton/common/config/model"
+)
 
 type Container struct {
 	RequiredValidators
@@ -12,5 +16,6 @@ type Container struct {
 	RequiredHTTPHandlers
 	RequiredEventHandlers
 
-	fs fs.FS
+	fs        fs.FS
+	buildInfo model.BuildInfo
 }

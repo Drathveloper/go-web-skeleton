@@ -3,9 +3,11 @@ package wire
 import (
 	"fmt"
 	"io/fs"
+
+	"github.com/Drathveloper/go-web-skeleton/common/config/model"
 )
 
-func Wire(fileSystem fs.FS) (*Container, error) {
+func Wire(fileSystem fs.FS, buildInfo model.BuildInfo) (*Container, error) {
 	var injectables = []injectableFunc{
 		injectValidators,
 		injectConfig,
@@ -20,7 +22,8 @@ func Wire(fileSystem fs.FS) (*Container, error) {
 	}
 
 	container := &Container{
-		fs: fileSystem,
+		fs:        fileSystem,
+		buildInfo: buildInfo,
 	}
 
 	for _, injectable := range injectables {

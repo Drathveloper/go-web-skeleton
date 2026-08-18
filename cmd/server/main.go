@@ -14,12 +14,14 @@ var (
 	BuildTime string
 	Version   string
 
-	// ConfigFS carries the YAML configuration into the binary.
-	// config/application.yaml is intentionally NOT committed: only
-	// application.example.yaml is. The glob keeps the build working from a
-	// fresh clone, while startup still fails loudly when the real file is
-	// missing, instead of silently running on a checked-in default.
-	//go:embed config/*.yaml
+	// ConfigFS carries the configuration into the binary: application.yaml,
+	// or application.json as fallback when no YAML exists. Neither real file
+	// is committed, only the example variants are. The globs keep the build
+	// working from a fresh clone (a go:embed pattern with no match breaks
+	// compilation, which is why application.example.json must stay committed
+	// too), while startup still fails loudly when the real file is missing,
+	// instead of silently running on a checked-in default.
+	//go:embed config/*.yaml config/*.json
 	ConfigFS embed.FS
 )
 
