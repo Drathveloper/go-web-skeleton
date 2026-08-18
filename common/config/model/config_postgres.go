@@ -7,13 +7,13 @@ import (
 )
 
 type PostgresConfig struct {
-	Host     string             `koanf:"host"     validate:"required,notblank"`
-	Database string             `koanf:"database" validate:"required,notblank"`
-	User     string             `koanf:"user"     validate:"required,notblank"`
-	Password string             `koanf:"password" validate:"required,notblank"`
+	Host     string             `validate:"required,notblank" koanf:"host"`
+	Database string             `validate:"required,notblank" koanf:"database"`
+	User     string             `validate:"required,notblank" koanf:"user"`
+	Password string             `validate:"required,notblank" koanf:"password"`
 	SSL      PostgresSSLConfig  `koanf:"ssl"`
 	Pool     PostgresPoolConfig `koanf:"pool"`
-	Port     int                `koanf:"port"     validate:"required,notblank"`
+	Port     int                `validate:"required,notblank" koanf:"port"`
 }
 
 func (c PostgresConfig) String() string {
@@ -46,7 +46,7 @@ func (c PostgresConfig) String() string {
 }
 
 type PostgresSSLConfig struct {
-	Mode string `koanf:"mode" validate:"omitempty,oneof=disable allow prefer require verify-ca verify-full"`
+	Mode string `validate:"omitempty,oneof=disable allow prefer require verify-ca verify-full" koanf:"mode"`
 }
 
 func (c PostgresSSLConfig) String() string {
@@ -54,9 +54,9 @@ func (c PostgresSSLConfig) String() string {
 }
 
 type PostgresPoolConfig struct {
-	MaxConnections         int32         `koanf:"max_connections"          validate:"omitempty,gt=0"`
-	MaxIdleConnections     int32         `koanf:"max_idle_connections"     validate:"omitempty,gt=0"`
-	MinConnections         int32         `koanf:"min_connections"          validate:"omitempty,gte=0"`
+	MaxConnections         int32         `validate:"omitempty,gt=0"        koanf:"max_connections"`
+	MaxIdleConnections     int32         `validate:"omitempty,gt=0"        koanf:"max_idle_connections"`
+	MinConnections         int32         `validate:"omitempty,gte=0"       koanf:"min_connections"`
 	MaxConnectionsLifetime time.Duration `koanf:"max_lifetime"`
 	MaxIdleTime            time.Duration `koanf:"max_idle_time"`
 	HealthCheckPeriod      time.Duration `koanf:"health_check_period"`

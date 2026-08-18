@@ -20,7 +20,7 @@ import (
 // on the SQL GORM actually emits rather than on a hand written string.
 // one-method rdbms.PostgresClient exists for.
 //
-//nolint:ireturn // sqlmock.Sqlmock is an interface by design; this is the seam the
+//nolint:ireturn
 func setupMockDB(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
 	t.Helper()
 

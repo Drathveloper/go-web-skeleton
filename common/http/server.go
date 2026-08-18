@@ -45,7 +45,8 @@ func Run(container *wire.Container, waitGroup *sync.WaitGroup, sigChan chan os.S
 	waitGroup.Go(func() {
 		if container.Env.EnableTLS {
 			slog.Info("starting https server")
-			if serverErr := srv.ListenAndServeTLS(container.Env.TLSCertFilePath, container.Env.TLSKeyFilePath); serverErr != nil {
+			if serverErr := srv.ListenAndServeTLS(
+				container.Env.TLSCertFilePath, container.Env.TLSKeyFilePath); serverErr != nil {
 				logServerError(serverErr)
 			}
 		} else {

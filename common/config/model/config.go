@@ -20,28 +20,28 @@ type ServerConfig struct {
 }
 
 type LoggingConfig struct {
-	Level              string   `koanf:"level"               validate:"omitempty,oneof=DEBUG INFO WARN ERROR"`
+	Level              string   `validate:"omitempty,oneof=DEBUG INFO WARN ERROR" koanf:"level"`
 	ConfidentialFields []string `koanf:"confidential_fields"`
 }
 
 type DatabasesConfig struct {
-	Postgres *PostgresConfig `koanf:"postgres" validate:"required"`
-	Redis    *RedisConfig    `koanf:"redis"    validate:"required"`
+	Postgres *PostgresConfig `validate:"required" koanf:"postgres"`
+	Redis    *RedisConfig    `validate:"required" koanf:"redis"`
 }
 
 type SecurityConfig struct {
-	Session *SessionConfig `koanf:"session" validate:"required"`
+	Session *SessionConfig `validate:"required" koanf:"session"`
 }
 
 type SessionConfig struct {
-	TTL          *int64 `koanf:"ttl"           validate:"required,gte=0"`
+	TTL          *int64 `validate:"required,gte=0" koanf:"ttl"`
 	CookieDomain string `koanf:"cookie_domain"`
 	SecureCookie bool   `koanf:"secure_cookie"`
 }
 
 type EventsConfig struct {
-	BufferSize        int           `koanf:"buffer_size"        validate:"required"`
-	WorkerConcurrency int           `koanf:"worker_concurrency" validate:"required"`
-	Timeout           time.Duration `koanf:"timeout"            validate:"required"`
-	ShutdownTimeout   time.Duration `koanf:"shutdown_timeout"   validate:"required"`
+	BufferSize        int           `validate:"required" koanf:"buffer_size"`
+	WorkerConcurrency int           `validate:"required" koanf:"worker_concurrency"`
+	Timeout           time.Duration `validate:"required" koanf:"timeout"`
+	ShutdownTimeout   time.Duration `validate:"required" koanf:"shutdown_timeout"`
 }
