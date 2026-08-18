@@ -1,0 +1,87 @@
+# Copy this file to cmd/server/config/application.yaml before running the server.
+# application.yaml is embedded into the binary and is git-ignored: it must never
+# hold production credentials in a committed file.
+#
+# This loader performs NO ${VAR} interpolation: common/config/reader_yaml.go
+# unmarshals the file verbatim. Only the process-level settings below are read
+# from the environment (common/config/model/env.go, caarlos0/env):
+#
+#   SERVICE_NAME   service name reported in logs      (default go-web-skeleton)
+#   ENVIRONMENT    environment label                  (default dev)
+#   PORT           HTTP listen port                   (default 8000)
+#   GIN_MODE       gin mode                           (default release)
+#   ENABLE_TLS     serve HTTPS                        (default false)
+#   TLS_CERT_FILE  certificate path when ENABLE_TLS
+#   TLS_KEY_FILE   private key path when ENABLE_TLS
+#
+# For a real deployment, render application.yaml from your secret store at
+# deploy time (postgres password, redis credentials and any TLS material) and
+# mount it into the build; do not commit the rendered file.
+#
+# The defaults below are the local development ones and match docker-compose.yml.
+
+server:
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 10s
+  max_header_bytes: 2048
+
+logging:
+  level: DEBUG
+
+security:
+  session:
+    ttl: 31536000
+    # Browsers accept Secure cookies over http://localhost, so this can stay on
+    # in local development. Never set it to false in a deployed environment.
+    secure_cookie: true
+
+events:
+  buffer_size: 10000
+  worker_concurrency: 10
+  timeout: 30s
+  shutdown_timeout: 30s
+
+databases:
+  postgres:
+    host: localhost
+    port: 5432
+    database: skeleton
+    user: skeleton
+    # SECRET: replace at deploy time.
+    password: skeleton
+    ssl:
+      mode: disable
+    pool:
+      max_connections: 5
+      min_connections: 1
+      max_lifetime: 30m
+      max_idle_time: 5m
+      health_check_period: 30s
+      max_conn_lifetime_jitter: 5m
+  redis:
+    hosts:
+      - localhost:6379
+    # SECRET: uncomment and replace at deploy time; the local container is open.
+    # username: skeleton
+    # password: skeleton
+    tls:
+      enabled: false
+      # When enabled, inline the PEM material here (ca_cert, client_cert,
+      # client_key) from your secret store. Never commit it.
+    retry_policy:
+      max_retries: 1
+      min_retry_backoff: 50ms
+      max_retry_backoff: 250ms
+    timeout:
+      dial_timeout: 200ms
+      read_timeout: 500ms
+      write_timeout: 500ms
+    pool:
+      max_connections: 10
+      timeout: 5s
+      min_idle_connections: 1
+      max_idle_connections: 5
+      max_active_connections: 10
+      max_connection_idle_time: 5m
+      max_connection_lifetime: 30m

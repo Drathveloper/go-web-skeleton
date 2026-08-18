@@ -1,0 +1,15 @@
+{{ define "header" }}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-xl font-semibold">
+        {{ .Title }}
+    </h1>
+    <div class="flex gap-2">
+        {{ range .Actions }}
+          <a href="{{ .Url }}"
+             class="px-3 py-1.5 bg-zinc-100 text-zinc-900 rounded-md text-sm hover:bg-white">
+              {{ .Label }}
+          </a>
+        {{ end }}
+    </div>
+  </div>
+{{ end }}

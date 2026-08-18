@@ -1,0 +1,194 @@
+{
+  "app": {
+    "name": "Skeleton"
+  },
+  "topbar": {
+    "search_text": "Search...",
+    "open_menu": "Open menu",
+    "toggle_theme": "Toggle theme"
+  },
+  "sidebar": {
+    "toggle_menu": "Toggle menu",
+    "close_menu": "Close menu",
+    "resize": "Drag to resize · Double click to reset",
+    "home": "Home",
+    "logout": "Log out",
+    "security": {
+      "title": "Security",
+      "items": {
+        "users": "Users"
+      }
+    }
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "es": "Spanish"
+  },
+  "auth": {
+    "create_user": {
+      "title": "Create new user",
+      "form": {
+        "username": {
+          "label": "User",
+          "placeholder": "user name"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "password"
+        },
+        "confirm_password": {
+          "label": "Confirm password",
+          "placeholder": "confirm password"
+        },
+        "roles": {
+          "label": "User roles"
+        },
+        "submit": {
+          "value": "Create user"
+        }
+      }
+    },
+    "list_users": {
+      "title": "List users",
+      "table": {
+        "title": "Users",
+        "subtitle": "Manage users",
+        "search_text": "Search users...",
+        "label": "New user",
+        "no_results": "No users available",
+        "headers": {
+          "users": "Users",
+          "roles": "Roles",
+          "actions": "Actions"
+        }
+      }
+    },
+    "login": {
+      "title": "Login",
+      "form": {
+        "username": {
+          "placeholder": "user name",
+          "label": "Username"
+        },
+        "password": {
+          "placeholder": "password",
+          "label": "Password"
+        },
+        "remember_me": {
+          "label": "Remember me"
+        },
+        "submit": {
+          "value": "Login"
+        }
+      }
+    },
+    "update_user": {
+      "title": "Update user",
+      "form": {
+        "username": {
+          "label": "User",
+          "placeholder": "user name"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "password"
+        },
+        "confirm_password": {
+          "label": "Confirm password",
+          "placeholder": "confirm password"
+        },
+        "roles": {
+          "label": "User roles"
+        },
+        "submit": {
+          "value": "Update user"
+        }
+      }
+    },
+    "logout": {
+      "title": "Log out",
+      "confirm": "Are you sure you want to log out?"
+    }
+  },
+  "session": {
+    "expired": "Your session has expired. Please log in again.",
+    "login_required": "You need to log in to access this page.",
+    "invalid_csrf": "The security token is invalid or has expired. Please reload the page.",
+    "logged_out": "You have logged out successfully."
+  },
+  "errors": {
+    "title": "Error",
+    "unexpected": "An unexpected error occurred. Please try again later.",
+    "bad_request": "The submitted data is not valid.",
+    "unauthorized": "You are not authenticated.",
+    "forbidden": "You do not have permission to perform this action.",
+    "not_found": "The requested resource does not exist.",
+    "conflict": "The resource already exists.",
+    "internal": "Internal server error.",
+    "invalid_form_data": "Invalid form data.",
+    "invalid_credentials": "Invalid username or password.",
+    "back": "Go back",
+    "retry": "Retry"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Enter a valid email address.",
+    "min": "The value is too short.",
+    "max": "The value is too long.",
+    "numeric": "Enter a valid number.",
+    "decimal": "Enter an amount with at most two decimals.",
+    "date": "Enter a valid date.",
+    "role": "Select a valid role.",
+    "password_mismatch": "The passwords do not match."
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "new": "New",
+    "view": "View",
+    "reset": "Reset",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "table": {
+    "search_text": "Search...",
+    "no_results": "No results available",
+    "loading": "Loading...",
+    "confirm_delete": "Are you sure you want to delete this record?",
+    "headers": {
+      "actions": "Actions"
+    }
+  },
+  "form": {
+    "close": "Close",
+    "required_hint": "Required field",
+    "optional": "Optional",
+    "select_placeholder": "Select an option"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "first": "First",
+    "last": "Last",
+    "page": "Page",
+    "of": "of",
+    "showing": "Showing",
+    "rows_per_page": "Rows per page",
+    "no_more_results": "No more results"
+  }
+}

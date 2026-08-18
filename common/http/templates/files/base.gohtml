@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="{{ .Language }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{{ block "title" . }}go-web-skeleton{{ end }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="/assets/js/theme_init.js"></script>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+  <script src="/assets/js/table_utils.js" defer></script>
+</head>
+
+{{ if .IsLogged }}
+  <body>
+    <div class="app">
+      {{ template "sidebar" . }}
+      <div class="sidebar-scrim lg:hidden" data-action="sidebar-close" aria-hidden="true"></div>
+      <div class="main-area">
+        {{ template "topbar" . }}
+        <div id="modal" class="modal" data-state="closed" aria-hidden="true"></div>
+        <main class="page">
+          {{ range .Msgs }}
+            {{ $cls := "alert-info" }}
+            {{ if eq .Type "success" }}{{ $cls = "alert-success" }}{{ end }}
+            {{ if eq .Type "warning" }}{{ $cls = "alert-warning" }}{{ end }}
+            {{ if eq .Type "error" }}{{ $cls = "alert-danger" }}{{ end }}
+            <div class="alert {{ $cls }} mb-4">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <div class="flex-1">
+                {{ if .Title }}<strong>{{ .Title }}</strong>{{ end }}
+                {{ if .Message }}<span> {{ .Message }}</span>{{ end }}
+              </div>
+            </div>
+          {{ end }}
+          {{ block "content" . }}{{ end }}
+        </main>
+      </div>
+    </div>
+  </body>
+{{ else }}
+  <body>
+    <main class="page">
+      {{ range .Msgs }}
+        {{ $cls := "alert-info" }}
+        {{ if eq .Type "success" }}{{ $cls = "alert-success" }}{{ end }}
+        {{ if eq .Type "warning" }}{{ $cls = "alert-warning" }}{{ end }}
+        {{ if eq .Type "error" }}{{ $cls = "alert-danger" }}{{ end }}
+        <div class="alert {{ $cls }} mb-4">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <div class="flex-1">
+            {{ if .Title }}<strong>{{ .Title }}</strong>{{ end }}
+            {{ if .Message }}<span> {{ .Message }}</span>{{ end }}
+          </div>
+        </div>
+      {{ end }}
+      {{ block "content" . }}{{ end }}
+    </main>
+  </body>
+{{ end }}
+</html>

@@ -1,0 +1,194 @@
+{
+  "app": {
+    "name": "Skeleton"
+  },
+  "topbar": {
+    "search_text": "Buscar...",
+    "open_menu": "Abrir menú",
+    "toggle_theme": "Alternar tema"
+  },
+  "sidebar": {
+    "toggle_menu": "Alternar menú",
+    "close_menu": "Cerrar menú",
+    "resize": "Arrastrar para redimensionar · Doble clic para reiniciar",
+    "home": "Inicio",
+    "logout": "Cerrar sesión",
+    "security": {
+      "title": "Seguridad",
+      "items": {
+        "users": "Usuarios"
+      }
+    }
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "label": "Idioma",
+    "en": "Inglés",
+    "es": "Español"
+  },
+  "auth": {
+    "create_user": {
+      "title": "Crear nuevo usuario",
+      "form": {
+        "username": {
+          "label": "Usuario",
+          "placeholder": "nombre de usuario"
+        },
+        "password": {
+          "label": "Contraseña",
+          "placeholder": "contraseña"
+        },
+        "confirm_password": {
+          "label": "Confirmar contraseña",
+          "placeholder": "confirma la contraseña"
+        },
+        "roles": {
+          "label": "Roles del usuario"
+        },
+        "submit": {
+          "value": "Crear usuario"
+        }
+      }
+    },
+    "list_users": {
+      "title": "Lista de usuarios",
+      "table": {
+        "title": "Usuarios",
+        "subtitle": "Gestión de usuarios",
+        "search_text": "Buscar usuarios...",
+        "label": "Nuevo usuario",
+        "no_results": "No hay usuarios disponibles",
+        "headers": {
+          "users": "Usuarios",
+          "roles": "Roles",
+          "actions": "Acciones"
+        }
+      }
+    },
+    "login": {
+      "title": "Iniciar sesión",
+      "form": {
+        "username": {
+          "placeholder": "nombre de usuario",
+          "label": "Usuario"
+        },
+        "password": {
+          "placeholder": "contraseña",
+          "label": "Contraseña"
+        },
+        "remember_me": {
+          "label": "Recordar mi sesión"
+        },
+        "submit": {
+          "value": "Iniciar sesión"
+        }
+      }
+    },
+    "update_user": {
+      "title": "Actualizar usuario",
+      "form": {
+        "username": {
+          "label": "Usuario",
+          "placeholder": "nombre de usuario"
+        },
+        "password": {
+          "label": "Contraseña",
+          "placeholder": "contraseña"
+        },
+        "confirm_password": {
+          "label": "Confirmar contraseña",
+          "placeholder": "confirma la contraseña"
+        },
+        "roles": {
+          "label": "Roles del usuario"
+        },
+        "submit": {
+          "value": "Actualizar usuario"
+        }
+      }
+    },
+    "logout": {
+      "title": "Cerrar sesión",
+      "confirm": "¿Seguro que quieres cerrar sesión?"
+    }
+  },
+  "session": {
+    "expired": "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+    "login_required": "Necesitas iniciar sesión para acceder a esta página.",
+    "invalid_csrf": "El token de seguridad no es válido o ha caducado. Recarga la página.",
+    "logged_out": "Has cerrado sesión correctamente."
+  },
+  "errors": {
+    "title": "Error",
+    "unexpected": "Se ha producido un error inesperado. Inténtalo de nuevo más tarde.",
+    "bad_request": "Los datos enviados no son válidos.",
+    "unauthorized": "No has iniciado sesión.",
+    "forbidden": "No tienes permiso para realizar esta acción.",
+    "not_found": "El recurso solicitado no existe.",
+    "conflict": "El recurso ya existe.",
+    "internal": "Error interno del servidor.",
+    "invalid_form_data": "Datos del formulario no válidos.",
+    "invalid_credentials": "Usuario o contraseña incorrectos.",
+    "back": "Volver atrás",
+    "retry": "Reintentar"
+  },
+  "validation": {
+    "required": "Este campo es obligatorio.",
+    "email": "Introduce una dirección de correo válida.",
+    "min": "El valor es demasiado corto.",
+    "max": "El valor es demasiado largo.",
+    "numeric": "Introduce un número válido.",
+    "decimal": "Introduce un importe con dos decimales como máximo.",
+    "date": "Introduce una fecha válida.",
+    "role": "Selecciona un rol válido.",
+    "password_mismatch": "Las contraseñas no coinciden."
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "new": "Nuevo",
+    "view": "Ver",
+    "reset": "Restablecer",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "table": {
+    "search_text": "Buscar...",
+    "no_results": "No hay resultados disponibles",
+    "loading": "Cargando...",
+    "confirm_delete": "¿Seguro que quieres eliminar este registro?",
+    "headers": {
+      "actions": "Acciones"
+    }
+  },
+  "form": {
+    "close": "Cerrar",
+    "required_hint": "Campo obligatorio",
+    "optional": "Opcional",
+    "select_placeholder": "Selecciona una opción"
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "first": "Primera",
+    "last": "Última",
+    "page": "Página",
+    "of": "de",
+    "showing": "Mostrando",
+    "rows_per_page": "Filas por página",
+    "no_more_results": "No hay más resultados"
+  }
+}
