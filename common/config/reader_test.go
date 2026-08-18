@@ -202,7 +202,7 @@ func TestReadConfig_Failures(t *testing.T) {
 		{
 			name: "test read config should fail when both config files are missing",
 			fs:   fstest.MapFS{},
-			expectedErrMsg: "read config failed: configuration file not found: " +
+			expectedErrMsg: "read config failed: load config failed: configuration file not found: " +
 				"tried config/application.yaml and config/application.json",
 		},
 		{
@@ -214,12 +214,12 @@ func TestReadConfig_Failures(t *testing.T) {
 				yamlConfigPath: &fstest.MapFile{Data: []byte("databases: [1,2\n")},
 				jsonConfigPath: &fstest.MapFile{Data: []byte(baseJSONContent)},
 			},
-			expectedErrMsg: "read config failed: yaml: line 1: did not find expected ',' or ']'",
+			expectedErrMsg: "read config failed: load config failed: yaml: line 1: did not find expected ',' or ']'",
 		},
 		{
 			name:           "test read config should fail when the json fallback is malformed",
 			fs:             jsonConfigFS(t, "{oops"),
-			expectedErrMsg: "read config failed: invalid character 'o' looking for beginning of object key string",
+			expectedErrMsg: "read config failed: load config failed: invalid character 'o' looking for beginning of object key string",
 		},
 	}
 	for _, tt := range tests {
