@@ -1,0 +1,27 @@
+{{ define "routes.go" -}}
+package routes
+
+import (
+	"github.com/gin-gonic/gin"
+
+	"{{ .Module }}/common/domain"
+	"{{ .Module }}/common/http/middleware"
+	"{{ .Module }}/common/wire"
+)
+
+func register{{ .Entity.Pascal }}Routes(router gin.IRouter, container *wire.Container) {
+	{{ .Entity.CamelPlural }} := router.Group("/{{ .Entity.Kebab }}")
+	{
+		{{ .Entity.CamelPlural }}.Use(middleware.Authorize({{ range $i, $r := .RoleConstants }}{{ if $i }}, {{ end }}domain.{{ $r }}{{ end }}))
+		{{ .Entity.CamelPlural }}.GET("", container.{{ .Entity.Pascal }}Handler.List{{ .Entity.PascalPlural }}View())
+
+		{{ .Entity.CamelPlural }}.GET("/new", container.{{ .Entity.Pascal }}Handler.Create{{ .Entity.Pascal }}View())
+		{{ .Entity.CamelPlural }}.POST("/new", container.{{ .Entity.Pascal }}Handler.Create{{ .Entity.Pascal }}Process())
+
+		{{ .Entity.CamelPlural }}.GET("/:id/edit", container.{{ .Entity.Pascal }}Handler.Update{{ .Entity.Pascal }}View())
+		{{ .Entity.CamelPlural }}.POST("/:id/edit", container.{{ .Entity.Pascal }}Handler.Update{{ .Entity.Pascal }}Process())
+
+		{{ .Entity.CamelPlural }}.POST("/:id/delete", container.{{ .Entity.Pascal }}Handler.Delete{{ .Entity.Pascal }}Process())
+	}
+}
+{{ end }}

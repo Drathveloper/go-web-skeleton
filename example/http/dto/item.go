@@ -4,8 +4,8 @@ package dto
 // binder only reads the former, so a `validate:` tag here would look like
 // validation while silently never running.
 //
-// Price is a string, not a number: money arrives as "12.34" and is converted to
-// cents by the mapper, with `decimal2` enforcing the two-decimal shape.
+// Money fields are strings, not numbers: an amount arrives as "12.34" and is
+// converted to cents by the mapper, with `decimal2` enforcing the shape.
 type Item struct {
 	Name       string `binding:"required"          form:"name"`
 	Notes      string `form:"notes"`

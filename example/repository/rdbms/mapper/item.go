@@ -27,12 +27,12 @@ func EntityItemToDomainItem(item *entity.Item) *domain.Item {
 		Name:       item.Name,
 		Notes:      item.Notes,
 		Stock:      item.Stock,
-		Active:     item.Active,
-		ReleasedAt: item.ReleasedAt,
-		StartsAt:   item.StartsAt,
 		Price:      item.Price,
 		Contact:    item.Contact,
+		ReleasedAt: item.ReleasedAt,
+		StartsAt:   item.StartsAt,
 		CategoryID: item.CategoryID,
+		Active:     item.Active,
 		Category:   entityItemCategoryOrNil(item.Category),
 	}
 }
@@ -43,17 +43,17 @@ func DomainItemToEntityItem(item *domain.Item) *entity.Item {
 		Name:       item.Name,
 		Notes:      item.Notes,
 		Stock:      item.Stock,
-		Active:     item.Active,
-		ReleasedAt: item.ReleasedAt,
-		StartsAt:   item.StartsAt,
 		Price:      item.Price,
 		Contact:    item.Contact,
+		ReleasedAt: item.ReleasedAt,
+		StartsAt:   item.StartsAt,
 		CategoryID: item.CategoryID,
+		Active:     item.Active,
 	}
 }
 
 // entityItemCategoryOrNil keeps an absent relation absent. The plain mapper
-// returns a zero value for nil, which would make the view render a category
+// returns a zero value for nil, which would make the view render a item category
 // named "" with id 0 instead of showing nothing.
 func entityItemCategoryOrNil(itemCategory *entity.ItemCategory) *domain.ItemCategory {
 	if itemCategory == nil {

@@ -28,6 +28,8 @@ const (
 	itemRowOOBReplace = "true"
 )
 
+// ItemService is declared by its consumer. The handler never imports the
+// service package; only common/wire knows both sides.
 type ItemService interface {
 	ListItems(ctx context.Context) ([]domain.Item, error)
 	ListItemLookups(ctx context.Context) ([]domain.Item, error)
@@ -38,7 +40,7 @@ type ItemService interface {
 	DeleteItem(ctx context.Context, id uint) error
 }
 
-// ItemCategoryLookupService is the narrow slice of the category service this
+// ItemCategoryLookupService is the narrow slice of the item category service this
 // handler needs to fill the relation <select>. A ref field composes services
 // through an interface of its own rather than reaching for the whole thing.
 type ItemCategoryLookupService interface {
@@ -46,14 +48,16 @@ type ItemCategoryLookupService interface {
 }
 
 type Item struct {
-	service         ItemService
-	categoryService ItemCategoryLookupService
+	service             ItemService
+	itemCategoryService ItemCategoryLookupService
 }
 
-func NewItem(service ItemService, categoryService ItemCategoryLookupService) *Item {
+func NewItem(
+	service ItemService,
+	itemCategoryService ItemCategoryLookupService) *Item {
 	return &Item{
-		service:         service,
-		categoryService: categoryService,
+		service:             service,
+		itemCategoryService: itemCategoryService,
 	}
 }
 
@@ -66,21 +70,22 @@ func (ctrl *Item) ListItemsView() gin.HandlerFunc {
 				listItemsErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
-		c.HTML(http.StatusOK, itemListPage, mapper.DomainItemsToItemsViewResponse(session, items))
+		response := mapper.DomainItemsToItemsViewResponse(session, items)
+		c.HTML(http.StatusOK, itemListPage, response)
 	}
 }
 
 func (ctrl *Item) CreateItemView() gin.HandlerFunc {
 	return func(c *gin.Context) { //nolint:varnamelen
 		session := helper.MustGetSession(c)
-		categories, err := ctrl.categoryService.ListItemCategoryLookups(c.Request.Context())
+		itemCategories, err := ctrl.itemCategoryService.ListItemCategoryLookups(c.Request.Context())
 		if err != nil {
 			helper.RenderErrorPage(c, session, http.StatusInternalServerError,
 				createItemErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		c.HTML(http.StatusOK, itemFormFragment,
-			mapper.DomainItemToFormView(session, nil, categories, false, ""))
+			mapper.DomainItemToFormView(session, nil, itemCategories, false, ""))
 	}
 }
 
@@ -89,20 +94,24 @@ func (ctrl *Item) CreateItemProcess() gin.HandlerFunc {
 		session := helper.MustGetSession(c)
 		var request dto.Item
 		if err := c.ShouldBind(&request); err != nil {
-			ctrl.renderFormError(c, &request, false, createItemErrMsg, helper.InvalidFormDataMessageID, err)
+			ctrl.renderFormError(
+				c, &request, false, createItemErrMsg, helper.InvalidFormDataMessageID, err)
 			return
 		}
 		item, err := mapper.DTOItemToDomainItem(&request, 0)
 		if err != nil {
-			ctrl.renderFormError(c, &request, false, createItemErrMsg, helper.InvalidFormDataMessageID, err)
+			ctrl.renderFormError(
+				c, &request, false, createItemErrMsg, helper.InvalidFormDataMessageID, err)
 			return
 		}
 		if err = ctrl.service.CreateItem(c.Request.Context(), item); err != nil {
-			ctrl.renderFormError(c, &request, false, createItemErrMsg, helper.UnexpectedErrorMessageID, err)
+			ctrl.renderFormError(
+				c, &request, false, createItemErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		helper.TriggerCloseModal(c)
-		c.HTML(http.StatusOK, itemRowFragment, mapper.DomainItemToTableRow(session, item, itemTbodyOOBSwap))
+		c.HTML(http.StatusOK, itemRowFragment,
+			mapper.DomainItemToTableRow(session, item, itemTbodyOOBSwap))
 	}
 }
 
@@ -120,14 +129,14 @@ func (ctrl *Item) UpdateItemView() gin.HandlerFunc {
 			ctrl.renderLoadError(c, err)
 			return
 		}
-		categories, err := ctrl.categoryService.ListItemCategoryLookups(c.Request.Context())
+		itemCategories, err := ctrl.itemCategoryService.ListItemCategoryLookups(c.Request.Context())
 		if err != nil {
 			helper.RenderErrorPage(c, session, http.StatusInternalServerError,
 				getItemErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		c.HTML(http.StatusOK, itemFormFragment,
-			mapper.DomainItemToFormView(session, mapper.DomainItemToDTOItem(item), categories, true, ""))
+			mapper.DomainItemToFormView(session, mapper.DomainItemToDTOItem(item), itemCategories, true, ""))
 	}
 }
 
@@ -143,21 +152,25 @@ func (ctrl *Item) UpdateItemProcess() gin.HandlerFunc {
 		var request dto.Item
 		if bindErr := c.ShouldBind(&request); bindErr != nil {
 			request.ID = uint(itemID)
-			ctrl.renderFormError(c, &request, true, updateItemErrMsg, helper.InvalidFormDataMessageID, bindErr)
+			ctrl.renderFormError(
+				c, &request, true, updateItemErrMsg, helper.InvalidFormDataMessageID, bindErr)
 			return
 		}
 		request.ID = uint(itemID)
 		item, err := mapper.DTOItemToDomainItem(&request, uint(itemID))
 		if err != nil {
-			ctrl.renderFormError(c, &request, true, updateItemErrMsg, helper.InvalidFormDataMessageID, err)
+			ctrl.renderFormError(
+				c, &request, true, updateItemErrMsg, helper.InvalidFormDataMessageID, err)
 			return
 		}
 		if err = ctrl.service.UpdateItem(c.Request.Context(), item); err != nil {
-			ctrl.renderFormError(c, &request, true, updateItemErrMsg, helper.UnexpectedErrorMessageID, err)
+			ctrl.renderFormError(
+				c, &request, true, updateItemErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		helper.TriggerCloseModal(c)
-		c.HTML(http.StatusOK, itemRowFragment, mapper.DomainItemToTableRow(session, item, itemRowOOBReplace))
+		c.HTML(http.StatusOK, itemRowFragment,
+			mapper.DomainItemToTableRow(session, item, itemRowOOBReplace))
 	}
 }
 
@@ -174,39 +187,40 @@ func (ctrl *Item) DeleteItemProcess() gin.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
+		// The row is removed client side by hx-swap="outerHTML" on an empty
+		// 200 body; there is nothing to render.
 		c.Status(http.StatusOK)
 	}
 }
 
 // renderFormError answers 422 with the form redisplayed: the submitted values
 // are preserved so nothing is retyped, the message is localized and generic,
-// and the real cause goes to the log. The lookups are reloaded because the
-// <select> needs its options again on the way back.
-//
-//nolint:varnamelen // c is the gin context, named c throughout the project
+// and the real cause goes to the log.
 func (ctrl *Item) renderFormError(
-	c *gin.Context, request *dto.Item, isEdit bool, logMsg, messageID string, cause error) {
-	session := helper.MustGetSession(c)
-	helper.LogError(c, logMsg, cause)
-	categories, err := ctrl.categoryService.ListItemCategoryLookups(c.Request.Context())
+	ginCtx *gin.Context, request *dto.Item, isEdit bool, logMsg, messageID string, cause error) {
+	session := helper.MustGetSession(ginCtx)
+	helper.LogError(ginCtx, logMsg, cause)
+	itemCategories, err := ctrl.itemCategoryService.ListItemCategoryLookups(ginCtx.Request.Context())
 	if err != nil {
-		helper.RenderErrorPage(c, session, http.StatusInternalServerError,
+		helper.RenderErrorPage(ginCtx, session, http.StatusInternalServerError,
 			logMsg, helper.UnexpectedErrorMessageID, err)
 		return
 	}
-	c.HTML(http.StatusUnprocessableEntity, itemFormFragment,
-		mapper.DomainItemToFormView(session, request, categories, isEdit,
+	ginCtx.HTML(http.StatusUnprocessableEntity, itemFormFragment,
+		mapper.DomainItemToFormView(session, request, itemCategories, isEdit,
 			helper.LocalizedMessage(session, messageID)))
 }
 
-//nolint:varnamelen // c is the gin context, named c throughout the project
-func (ctrl *Item) renderLoadError(c *gin.Context, err error) {
-	session := helper.MustGetSession(c)
+// renderLoadError keeps the 404/500 split in one place: a record that does not
+// exist is not a server failure, and the sentinel lives in the domain so this
+// layer can tell them apart without importing the service package.
+func (ctrl *Item) renderLoadError(ginCtx *gin.Context, err error) {
+	session := helper.MustGetSession(ginCtx)
 	if errors.Is(err, domain.ErrItemNotFound) {
-		helper.RenderErrorPage(c, session, http.StatusNotFound,
+		helper.RenderErrorPage(ginCtx, session, http.StatusNotFound,
 			getItemErrMsg, helper.NotFoundErrorMessageID, err)
 		return
 	}
-	helper.RenderErrorPage(c, session, http.StatusInternalServerError,
+	helper.RenderErrorPage(ginCtx, session, http.StatusInternalServerError,
 		getItemErrMsg, helper.UnexpectedErrorMessageID, err)
 }

@@ -33,7 +33,8 @@ func NewItemCategory(db rdbms.PostgresClient) *ItemCategory {
 	}
 }
 
-func (i *ItemCategory) FindAllItemCategories(ctx context.Context) ([]domain.ItemCategory, error) {
+func (i *ItemCategory) FindAllItemCategories(
+	ctx context.Context) ([]domain.ItemCategory, error) {
 	var itemCategoriesEntity []entity.ItemCategory
 
 	err := i.db.WithContext(ctx).
@@ -45,7 +46,8 @@ func (i *ItemCategory) FindAllItemCategories(ctx context.Context) ([]domain.Item
 	return mapper.EntityItemCategoriesToDomainItemCategories(itemCategoriesEntity), nil
 }
 
-func (i *ItemCategory) FindAllItemCategoryLookups(ctx context.Context) ([]domain.ItemCategory, error) {
+func (i *ItemCategory) FindAllItemCategoryLookups(
+	ctx context.Context) ([]domain.ItemCategory, error) {
 	var itemCategoriesEntity []entity.ItemCategory
 
 	err := i.db.WithContext(ctx).
@@ -135,7 +137,8 @@ func (i *ItemCategory) UpdateItemCategory(
 	return itemCategory, nil
 }
 
-func (i *ItemCategory) DeleteItemCategory(ctx context.Context, itemCategoryID uint) error {
+func (i *ItemCategory) DeleteItemCategory(
+	ctx context.Context, itemCategoryID uint) error {
 	err := i.db.WithContext(ctx).
 		Delete(&entity.ItemCategory{}, itemCategoryID).Error
 	if err != nil {

@@ -1,0 +1,265 @@
+{{ define "http_mapper.go" -}}
+package mapper
+
+import (
+{{- if .HasParse }}
+	"fmt"
+{{- end }}
+	"strconv"
+{{- if .HasTime }}
+	"time"
+{{- end }}
+
+	commondomain "{{ .Module }}/common/domain"
+	commondto "{{ .Module }}/common/http/dto"
+	commonmapper "{{ .Module }}/common/http/mapper"
+	"{{ .Module }}/{{ .Context.Snake }}/domain"
+	"{{ .Module }}/{{ .Context.Snake }}/http/dto"
+)
+
+const (
+	{{ .Entity.Camel }}BasePath  = "/{{ .Entity.Kebab }}"
+	{{ .Entity.Camel }}TableID   = "{{ .Entity.KebabPlural }}"
+	{{ .Entity.Camel }}RowPrefix = "{{ .Entity.Kebab }}-row-"
+)
+
+func Domain{{ .Entity.PascalPlural }}To{{ .Entity.PascalPlural }}ViewResponse(
+	session *commondomain.Session,
+	{{ .Entity.CamelPlural }} []domain.{{ .Entity.Pascal }}) *commondto.ViewResponse[commondto.TableView] {
+	data := Domain{{ .Entity.PascalPlural }}ToTableView(session, {{ .Entity.CamelPlural }})
+	return commonmapper.MapDataToViewResponse(&data, get{{ .Entity.Pascal }}Breadcrumb(session), session)
+}
+
+// Domain{{ .Entity.PascalPlural }}ToTableView builds the whole listing. The page template is a
+// single call into the shared table component, so a change to the table design
+// is one edit there and not one per generated module.
+func Domain{{ .Entity.PascalPlural }}ToTableView(
+	session *commondomain.Session, {{ .Entity.CamelPlural }} []domain.{{ .Entity.Pascal }}) commondto.TableView {
+	rows := make([]commondto.TableRow, 0, len({{ .Entity.CamelPlural }}))
+	for i := range {{ .Entity.CamelPlural }} {
+		rows = append(rows, Domain{{ .Entity.Pascal }}ToTableRow(session, &{{ .Entity.CamelPlural }}[i], ""))
+	}
+	return commondto.TableView{
+		ID:       {{ .Entity.Camel }}TableID,
+		Title:    localize(session, "{{ .Entity.Snake }}.title"),
+		Subtitle: localize(session, "{{ .Entity.Snake }}.subtitle"),
+		NewURL:   {{ .Entity.Camel }}BasePath + "/new",
+		NewLabel: localize(session, "{{ .Entity.Snake }}.actions.new"),
+		Language: session.Language,
+		Columns: []commondto.TableColumn{
+{{- range .TableFields }}
+			{Label: localize(session, "{{ $.Entity.Snake }}.fields.{{ .Snake }}"), SortKey: "{{ .Snake }}"{{ if .TableAlign }}, Align: "{{ .TableAlign }}"{{ end }}},
+{{- end }}
+			{Label: localize(session, "actions.title"), Align: "right"},
+		},
+		Rows: rows,
+	}
+}
+
+func Domain{{ .Entity.Pascal }}ToTableRow(
+	session *commondomain.Session, {{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}, oob string) commondto.TableRow {
+	{{ .Entity.Camel }}ID := strconv.FormatUint(uint64({{ .Entity.Camel }}.ID), 10)
+	return commondto.TableRow{
+		ID:        {{ .Entity.Camel }}RowPrefix + {{ .Entity.Camel }}ID,
+		EditURL:   {{ .Entity.Camel }}BasePath + "/" + {{ .Entity.Camel }}ID + "/edit",
+		DeleteURL: {{ .Entity.Camel }}BasePath + "/" + {{ .Entity.Camel }}ID + "/delete",
+		CSRFToken: session.CSRFToken,
+		Language:  session.Language,
+		OOB:       oob,
+		Cells: []commondto.TableCell{
+{{- range $index, $field := .TableFields }}
+{{- if eq $index 0 }}
+			{Text: {{ $.Entity.Camel }}.{{ $field.Pascal }}, Secondary: "#" + {{ $.Entity.Camel }}ID, SecondaryMono: true, Strong: true},
+{{- else if $field.IsRef }}
+			{Text: {{ $.Entity.Camel }}{{ $field.RelationPascal }}Name({{ $.Entity.Camel }})},
+{{- else if eq $field.Type "money" }}
+			{Text: *commonmapper.UintToDecimalString({{ $.Entity.Camel }}.{{ $field.Pascal }}), Align: "right", Mono: true},
+{{- else if eq $field.Type "bool" }}
+			{Text: {{ $field.Camel }}Label(session, {{ $.Entity.Camel }}.{{ $field.Pascal }}), Badge: {{ $field.Camel }}Badge({{ $.Entity.Camel }}.{{ $field.Pascal }}), Align: "center"},
+{{- else if eq $field.Type "date" }}
+			{Text: commonmapper.FormatDate({{ $.Entity.Camel }}.{{ $field.Pascal }})},
+{{- else if or (eq $field.Type "uint") (eq $field.Type "int") }}
+			{Text: strconv.Format{{ if eq $field.Type "uint" }}Uint(uint64({{ else }}Int(int64({{ end }}{{ $.Entity.Camel }}.{{ $field.Pascal }}), 10), Align: "right", Mono: true},
+{{- else }}
+			{Text: {{ $.Entity.Camel }}.{{ $field.Pascal }}},
+{{- end }}
+{{- end }}
+		},
+	}
+}
+
+// Domain{{ .Entity.Pascal }}ToFormView renders both create and update: the only difference is
+// the action URL and the title, so there is one form, not two.
+//
+//nolint:funlen // a declarative list with one literal per module field
+func Domain{{ .Entity.Pascal }}ToFormView(
+	session *commondomain.Session,
+	{{ .Entity.Camel }} *dto.{{ .Entity.Pascal }},
+{{- range .RefFields }}
+	{{ .RefEntity.CamelPlural }} []domain.{{ .RefEntity.Pascal }},
+{{- end }}
+	isEdit bool,
+	errMsg string) commondto.FormView {
+	action := {{ .Entity.Camel }}BasePath + "/new"
+	title := localize(session, "{{ .Entity.Snake }}.actions.new")
+	if isEdit && {{ .Entity.Camel }} != nil {
+		{{ .Entity.Camel }}ID := strconv.FormatUint(uint64({{ .Entity.Camel }}.ID), 10)
+		action = {{ .Entity.Camel }}BasePath + "/" + {{ .Entity.Camel }}ID + "/edit"
+		title = localize(session, "{{ .Entity.Snake }}.actions.edit")
+	}
+	return commondto.FormView{
+		Title:     title,
+		Action:    action,
+		Error:     errMsg,
+		Language:  session.Language,
+		CSRFToken: session.CSRFToken,
+		Fields: []commondto.FormField{
+{{- range .Fields }}
+			{
+				Name:  "{{ .Snake }}",
+				Label: localize(session, "{{ $.Entity.Snake }}.fields.{{ .Snake }}"),
+				Type:  commondto.{{ .FormType }},
+{{- if eq .Type "bool" }}
+				Checked: {{ $.Entity.Camel }} != nil && {{ $.Entity.Camel }}.{{ .Pascal }},
+{{- else if .IsRef }}
+				Options:  {{ .RefEntity.Camel }}Options({{ .RefEntity.CamelPlural }}),
+				Selected: {{ $.Entity.Camel }}Selected{{ .RelationPascal }}({{ $.Entity.Camel }}),
+{{- else if or (eq .Type "uint") (eq .Type "int") }}
+				Value: {{ $.Entity.Camel }}Field({{ $.Entity.Camel }}, func({{ $.Entity.Receiver }} *dto.{{ $.Entity.Pascal }}) string {
+					return strconv.Format{{ if eq .Type "uint" }}Uint(uint64({{ else }}Int(int64({{ end }}{{ $.Entity.Receiver }}.{{ .Pascal }}), 10)
+				}),
+{{- else }}
+				Value: {{ $.Entity.Camel }}Field({{ $.Entity.Camel }}, func({{ $.Entity.Receiver }} *dto.{{ $.Entity.Pascal }}) string { return {{ $.Entity.Receiver }}.{{ .Pascal }} }),
+{{- end }}
+{{- if .Required }}
+				Required: true,
+{{- end }}
+			},
+{{- end }}
+		},
+	}
+}
+{{ if .HasParse }}
+// DTO{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }} converts the submitted form. A malformed value is an
+// error, never a silently zeroed field.
+func DTO{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}({{ .Entity.Camel }} *dto.{{ .Entity.Pascal }}, {{ .Entity.Camel }}ID uint) (*domain.{{ .Entity.Pascal }}, error) {
+{{- range .Fields }}
+{{- if eq .Type "money" }}
+	{{ .Camel }}, err := commonmapper.ParseDecimalToUint({{ $.Entity.Camel }}.{{ .Pascal }})
+	if err != nil {
+		return nil, fmt.Errorf("parse {{ $.Entity.Words }} {{ .Snake }} failed: %w", err)
+	}
+{{- else if eq .Type "date" }}
+	{{ .Camel }}, err := time.Parse(commonmapper.DateLayout, {{ $.Entity.Camel }}.{{ .Pascal }})
+	if err != nil {
+		return nil, fmt.Errorf("parse {{ $.Entity.Words }} {{ .Snake }} failed: %w", err)
+	}
+{{- else if eq .Type "datetime" }}
+	{{ .Camel }}, err := time.Parse(commonmapper.DateTimeLayout, {{ $.Entity.Camel }}.{{ .Pascal }})
+	if err != nil {
+		return nil, fmt.Errorf("parse {{ $.Entity.Words }} {{ .Snake }} failed: %w", err)
+	}
+{{- end }}
+{{- end }}
+	return &domain.{{ .Entity.Pascal }}{
+		ID: {{ .Entity.Camel }}ID,
+{{- range .Fields }}
+{{- if eq .Type "money" }}
+		{{ .Pascal }}: *{{ .Camel }},
+{{- else if .NeedsParse }}
+		{{ .Pascal }}: {{ .Camel }},
+{{- else }}
+		{{ .Pascal }}: {{ $.Entity.Camel }}.{{ .Pascal }},
+{{- end }}
+{{- end }}
+	}, nil
+}
+{{ else }}
+func DTO{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}({{ .Entity.Camel }} *dto.{{ .Entity.Pascal }}, {{ .Entity.Camel }}ID uint) *domain.{{ .Entity.Pascal }} {
+	return &domain.{{ .Entity.Pascal }}{
+		ID: {{ .Entity.Camel }}ID,
+{{- range .Fields }}
+		{{ .Pascal }}: {{ $.Entity.Camel }}.{{ .Pascal }},
+{{- end }}
+	}
+}
+{{ end }}
+func Domain{{ .Entity.Pascal }}ToDTO{{ .Entity.Pascal }}({{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) *dto.{{ .Entity.Pascal }} {
+	return &dto.{{ .Entity.Pascal }}{
+		ID: {{ .Entity.Camel }}.ID,
+{{- range .Fields }}
+{{- if eq .Type "money" }}
+		{{ .Pascal }}: *commonmapper.UintToDecimalString({{ $.Entity.Camel }}.{{ .Pascal }}),
+{{- else if eq .Type "date" }}
+		{{ .Pascal }}: commonmapper.FormatDate({{ $.Entity.Camel }}.{{ .Pascal }}),
+{{- else if eq .Type "datetime" }}
+		{{ .Pascal }}: commonmapper.FormatDateTime({{ $.Entity.Camel }}.{{ .Pascal }}),
+{{- else }}
+		{{ .Pascal }}: {{ $.Entity.Camel }}.{{ .Pascal }},
+{{- end }}
+{{- end }}
+	}
+}
+
+func Domain{{ .Entity.PascalPlural }}ToDTO{{ .Entity.PascalPlural }}({{ .Entity.CamelPlural }} []domain.{{ .Entity.Pascal }}) []dto.{{ .Entity.Pascal }} {
+	result := make([]dto.{{ .Entity.Pascal }}, 0, len({{ .Entity.CamelPlural }}))
+	for i := range {{ .Entity.CamelPlural }} {
+		result = append(result, *Domain{{ .Entity.Pascal }}ToDTO{{ .Entity.Pascal }}(&{{ .Entity.CamelPlural }}[i]))
+	}
+	return result
+}
+{{- range .RefFields }}
+
+func {{ .RefEntity.Camel }}Options({{ .RefEntity.CamelPlural }} []domain.{{ .RefEntity.Pascal }}) []commondto.SelectOption {
+	options := make([]commondto.SelectOption, 0, len({{ .RefEntity.CamelPlural }}))
+	for i := range {{ .RefEntity.CamelPlural }} {
+		options = append(options, commondto.SelectOption{
+			Value: strconv.FormatUint(uint64({{ .RefEntity.CamelPlural }}[i].ID), 10),
+			Label: {{ .RefEntity.CamelPlural }}[i].{{ $.LookupPascal }},
+		})
+	}
+	return options
+}
+
+func {{ $.Entity.Camel }}Selected{{ .RelationPascal }}({{ $.Entity.Camel }} *dto.{{ $.Entity.Pascal }}) []string {
+	if {{ $.Entity.Camel }} == nil || {{ $.Entity.Camel }}.{{ .Pascal }} == 0 {
+		return nil
+	}
+	return []string{strconv.FormatUint(uint64({{ $.Entity.Camel }}.{{ .Pascal }}), 10)}
+}
+
+func {{ $.Entity.Camel }}{{ .RelationPascal }}Name({{ $.Entity.Camel }} *domain.{{ $.Entity.Pascal }}) string {
+	if {{ $.Entity.Camel }}.{{ .RelationPascal }} == nil {
+		return ""
+	}
+	return {{ $.Entity.Camel }}.{{ .RelationPascal }}.{{ $.LookupPascal }}
+}
+{{- end }}
+
+func {{ .Entity.Camel }}Field({{ .Entity.Camel }} *dto.{{ .Entity.Pascal }}, get func(*dto.{{ .Entity.Pascal }}) string) string {
+	if {{ .Entity.Camel }} == nil {
+		return ""
+	}
+	return get({{ .Entity.Camel }})
+}
+{{- range .BoolFields }}
+
+func {{ .Camel }}Label(session *commondomain.Session, {{ .Camel }} bool) string {
+	if {{ .Camel }} {
+		return localize(session, "{{ $.Entity.Snake }}.{{ .Snake }}.yes")
+	}
+	return localize(session, "{{ $.Entity.Snake }}.{{ .Snake }}.no")
+}
+
+func {{ .Camel }}Badge({{ .Camel }} bool) string {
+	if {{ .Camel }} {
+		return "success"
+	}
+	return "neutral"
+}
+{{- end }}
+
+func get{{ .Entity.Pascal }}Breadcrumb(session *commondomain.Session) []string {
+	return []string{localize(session, "{{ .Context.Snake }}.title"), localize(session, "{{ .Entity.Snake }}.title")}
+}
+{{ end }}

@@ -1,0 +1,23 @@
+{{ define "locale.json" -}}
+{
+  "{{ .Entity.Snake }}": {
+    "title": "{{ .Entity.HumanPlural }}",
+    "subtitle": "",
+    "actions": {
+      "new": "New {{ .Entity.Words }}",
+      "edit": "Edit {{ .Entity.Words }}"
+    },
+    "fields": {
+{{- range $i, $f := .Fields }}
+      "{{ $f.Snake }}": "{{ $f.Human }}"{{ if ne (add $i 1) (len $.Fields) }},{{ end }}
+{{- end }}
+    }{{ if .BoolFields }},{{ end }}
+{{- range $i, $f := .BoolFields }}
+    "{{ $f.Snake }}": {
+      "yes": "{{ $f.Human }}",
+      "no": "Not {{ $f.Words }}"
+    }{{ if ne (add $i 1) (len $.BoolFields) }},{{ end }}
+{{- end }}
+  }
+}
+{{ end }}

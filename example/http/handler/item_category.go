@@ -24,13 +24,12 @@ const (
 	itemCategoryListPage      = "item_category/list_item_categories"
 	itemCategoryFormFragment  = "fragments/form/modal"
 	itemCategoryRowFragment   = "fragments/table/row"
-	itemCategoryListPath      = "/item-category"
 	itemCategoryTbodyOOBSwap  = "afterbegin:#item-categories-tbody"
 	itemCategoryRowOOBReplace = "true"
 )
 
-// ItemCategoryService is declared by its consumer. The handler never imports
-// the service package; only common/wire knows both sides.
+// ItemCategoryService is declared by its consumer. The handler never imports the
+// service package; only common/wire knows both sides.
 type ItemCategoryService interface {
 	ListItemCategories(ctx context.Context) ([]domain.ItemCategory, error)
 	ListItemCategoryLookups(ctx context.Context) ([]domain.ItemCategory, error)
@@ -78,18 +77,14 @@ func (ctrl *ItemCategory) CreateItemCategoryProcess() gin.HandlerFunc {
 		session := helper.MustGetSession(c)
 		var request dto.ItemCategory
 		if err := c.ShouldBind(&request); err != nil {
-			helper.LogError(c, createItemCategoryErrMsg, err)
-			c.HTML(http.StatusUnprocessableEntity, itemCategoryFormFragment,
-				mapper.DomainItemCategoryToFormView(session, &request, false,
-					helper.LocalizedMessage(session, helper.InvalidFormDataMessageID)))
+			ctrl.renderFormError(
+				c, &request, false, createItemCategoryErrMsg, helper.InvalidFormDataMessageID, err)
 			return
 		}
 		itemCategory := mapper.DTOItemCategoryToDomainItemCategory(&request, 0)
 		if err := ctrl.service.CreateItemCategory(c.Request.Context(), itemCategory); err != nil {
-			helper.LogError(c, createItemCategoryErrMsg, err)
-			c.HTML(http.StatusUnprocessableEntity, itemCategoryFormFragment,
-				mapper.DomainItemCategoryToFormView(session, &request, false,
-					helper.LocalizedMessage(session, helper.UnexpectedErrorMessageID)))
+			ctrl.renderFormError(
+				c, &request, false, createItemCategoryErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		helper.TriggerCloseModal(c)
@@ -113,8 +108,7 @@ func (ctrl *ItemCategory) UpdateItemCategoryView() gin.HandlerFunc {
 			return
 		}
 		c.HTML(http.StatusOK, itemCategoryFormFragment,
-			mapper.DomainItemCategoryToFormView(
-				session, mapper.DomainItemCategoryToDTOItemCategory(itemCategory), true, ""))
+			mapper.DomainItemCategoryToFormView(session, mapper.DomainItemCategoryToDTOItemCategory(itemCategory), true, ""))
 	}
 }
 
@@ -130,19 +124,15 @@ func (ctrl *ItemCategory) UpdateItemCategoryProcess() gin.HandlerFunc {
 		var request dto.ItemCategory
 		if bindErr := c.ShouldBind(&request); bindErr != nil {
 			request.ID = uint(itemCategoryID)
-			helper.LogError(c, updateItemCategoryErrMsg, bindErr)
-			c.HTML(http.StatusUnprocessableEntity, itemCategoryFormFragment,
-				mapper.DomainItemCategoryToFormView(session, &request, true,
-					helper.LocalizedMessage(session, helper.InvalidFormDataMessageID)))
+			ctrl.renderFormError(
+				c, &request, true, updateItemCategoryErrMsg, helper.InvalidFormDataMessageID, bindErr)
 			return
 		}
 		request.ID = uint(itemCategoryID)
 		itemCategory := mapper.DTOItemCategoryToDomainItemCategory(&request, uint(itemCategoryID))
 		if err = ctrl.service.UpdateItemCategory(c.Request.Context(), itemCategory); err != nil {
-			helper.LogError(c, updateItemCategoryErrMsg, err)
-			c.HTML(http.StatusUnprocessableEntity, itemCategoryFormFragment,
-				mapper.DomainItemCategoryToFormView(session, &request, true,
-					helper.LocalizedMessage(session, helper.UnexpectedErrorMessageID)))
+			ctrl.renderFormError(
+				c, &request, true, updateItemCategoryErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		helper.TriggerCloseModal(c)
@@ -170,16 +160,28 @@ func (ctrl *ItemCategory) DeleteItemCategoryProcess() gin.HandlerFunc {
 	}
 }
 
+// renderFormError answers 422 with the form redisplayed: the submitted values
+// are preserved so nothing is retyped, the message is localized and generic,
+// and the real cause goes to the log.
+func (ctrl *ItemCategory) renderFormError(
+	ginCtx *gin.Context, request *dto.ItemCategory, isEdit bool, logMsg, messageID string, cause error) {
+	session := helper.MustGetSession(ginCtx)
+	helper.LogError(ginCtx, logMsg, cause)
+	ginCtx.HTML(http.StatusUnprocessableEntity, itemCategoryFormFragment,
+		mapper.DomainItemCategoryToFormView(session, request, isEdit,
+			helper.LocalizedMessage(session, messageID)))
+}
+
 // renderLoadError keeps the 404/500 split in one place: a record that does not
 // exist is not a server failure, and the sentinel lives in the domain so this
 // layer can tell them apart without importing the service package.
-func (ctrl *ItemCategory) renderLoadError(c *gin.Context, err error) { //nolint:varnamelen
-	session := helper.MustGetSession(c)
+func (ctrl *ItemCategory) renderLoadError(ginCtx *gin.Context, err error) {
+	session := helper.MustGetSession(ginCtx)
 	if errors.Is(err, domain.ErrItemCategoryNotFound) {
-		helper.RenderErrorPage(c, session, http.StatusNotFound,
+		helper.RenderErrorPage(ginCtx, session, http.StatusNotFound,
 			getItemCategoryErrMsg, helper.NotFoundErrorMessageID, err)
 		return
 	}
-	helper.RenderErrorPage(c, session, http.StatusInternalServerError,
+	helper.RenderErrorPage(ginCtx, session, http.StatusInternalServerError,
 		getItemCategoryErrMsg, helper.UnexpectedErrorMessageID, err)
 }

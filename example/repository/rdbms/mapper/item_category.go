@@ -19,13 +19,13 @@ func EntityItemCategoriesToDomainItemCategories(entities []entity.ItemCategory) 
 }
 
 func EntityItemCategoryToDomainItemCategory(itemCategory *entity.ItemCategory) *domain.ItemCategory {
-	if itemCategory != nil {
-		return &domain.ItemCategory{
-			ID:   itemCategory.ID,
-			Name: itemCategory.Name,
-		}
+	if itemCategory == nil {
+		return &domain.ItemCategory{}
 	}
-	return &domain.ItemCategory{}
+	return &domain.ItemCategory{
+		ID:   itemCategory.ID,
+		Name: itemCategory.Name,
+	}
 }
 
 func DomainItemCategoryToEntityItemCategory(itemCategory *domain.ItemCategory) *entity.ItemCategory {

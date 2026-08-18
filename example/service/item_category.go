@@ -41,7 +41,8 @@ func NewItemCategory(repository ItemCategoryRepository) *ItemCategory {
 	}
 }
 
-func (i *ItemCategory) ListItemCategories(ctx context.Context) ([]domain.ItemCategory, error) {
+func (i *ItemCategory) ListItemCategories(
+	ctx context.Context) ([]domain.ItemCategory, error) {
 	itemCategories, err := i.repository.FindAllItemCategories(ctx)
 	if err != nil {
 		return nil, fmt.Errorf(constants.DefaultWrappedErrorTemplate, listItemCategoriesErrMsg, err)
@@ -49,7 +50,8 @@ func (i *ItemCategory) ListItemCategories(ctx context.Context) ([]domain.ItemCat
 	return itemCategories, nil
 }
 
-func (i *ItemCategory) ListItemCategoryLookups(ctx context.Context) ([]domain.ItemCategory, error) {
+func (i *ItemCategory) ListItemCategoryLookups(
+	ctx context.Context) ([]domain.ItemCategory, error) {
 	itemCategories, err := i.repository.FindAllItemCategoryLookups(ctx)
 	if err != nil {
 		return nil, fmt.Errorf(constants.DefaultWrappedErrorTemplate, listItemCategoriesErrMsg, err)
@@ -57,7 +59,8 @@ func (i *ItemCategory) ListItemCategoryLookups(ctx context.Context) ([]domain.It
 	return itemCategories, nil
 }
 
-func (i *ItemCategory) GetItemCategoryByID(ctx context.Context, id uint) (*domain.ItemCategory, error) {
+func (i *ItemCategory) GetItemCategoryByID(
+	ctx context.Context, id uint) (*domain.ItemCategory, error) {
 	itemCategory, err := i.repository.FindItemCategoryByID(ctx, id)
 	if err != nil {
 		switch {
@@ -71,7 +74,8 @@ func (i *ItemCategory) GetItemCategoryByID(ctx context.Context, id uint) (*domai
 	return itemCategory, nil
 }
 
-func (i *ItemCategory) GetItemCategoryByIDSummary(ctx context.Context, id uint) (*domain.ItemCategory, error) {
+func (i *ItemCategory) GetItemCategoryByIDSummary(
+	ctx context.Context, id uint) (*domain.ItemCategory, error) {
 	itemCategory, err := i.repository.FindItemCategoryByIDSummary(ctx, id)
 	if err != nil {
 		switch {
@@ -85,7 +89,8 @@ func (i *ItemCategory) GetItemCategoryByIDSummary(ctx context.Context, id uint) 
 	return itemCategory, nil
 }
 
-func (i *ItemCategory) CreateItemCategory(ctx context.Context, itemCategory *domain.ItemCategory) error {
+func (i *ItemCategory) CreateItemCategory(
+	ctx context.Context, itemCategory *domain.ItemCategory) error {
 	created, err := i.repository.CreateItemCategory(ctx, itemCategory)
 	if err != nil {
 		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, createItemCategoryErrMsg, err)
@@ -94,7 +99,8 @@ func (i *ItemCategory) CreateItemCategory(ctx context.Context, itemCategory *dom
 	return nil
 }
 
-func (i *ItemCategory) UpdateItemCategory(ctx context.Context, itemCategory *domain.ItemCategory) error {
+func (i *ItemCategory) UpdateItemCategory(
+	ctx context.Context, itemCategory *domain.ItemCategory) error {
 	updated, err := i.repository.UpdateItemCategory(ctx, itemCategory)
 	if err != nil {
 		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, updateItemCategoryErrMsg, err)
@@ -103,7 +109,8 @@ func (i *ItemCategory) UpdateItemCategory(ctx context.Context, itemCategory *dom
 	return nil
 }
 
-func (i *ItemCategory) DeleteItemCategory(ctx context.Context, id uint) error {
+func (i *ItemCategory) DeleteItemCategory(
+	ctx context.Context, id uint) error {
 	err := i.repository.DeleteItemCategory(ctx, id)
 	if err != nil {
 		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, deleteItemCategoryErrMsg, err)

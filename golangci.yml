@@ -45,6 +45,16 @@ linters:
       - path: ^example/
         linters:
           - dupl
+      # cmd/scaffold is a code generator CLI, not a service. It prints its
+      # progress to stdout, walks and writes files at paths it constructs, and
+      # sets octal file modes; the linters below exist to catch exactly those
+      # things in request-handling code, where they would be defects.
+      - path: ^cmd/scaffold/
+        linters:
+          - forbidigo
+          - mnd
+          - gosec
+          - cyclop
       - linters:
           - gosec
         text: 'G104:'

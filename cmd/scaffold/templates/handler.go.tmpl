@@ -1,0 +1,261 @@
+{{ define "handler.go" -}}
+package handler
+
+import (
+	"context"
+	"errors"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+
+	"{{ .Module }}/common/http/helper"
+	"{{ .Module }}/{{ .Context.Snake }}/domain"
+	"{{ .Module }}/{{ .Context.Snake }}/http/dto"
+	"{{ .Module }}/{{ .Context.Snake }}/http/mapper"
+)
+
+const (
+	list{{ .Entity.PascalPlural }}ErrMsg = "list {{ .Entity.WordsPlural }} handler failed"
+	get{{ .Entity.Pascal }}ErrMsg    = "get {{ .Entity.Words }} handler failed"
+	create{{ .Entity.Pascal }}ErrMsg = "create {{ .Entity.Words }} handler failed"
+	update{{ .Entity.Pascal }}ErrMsg = "update {{ .Entity.Words }} handler failed"
+	delete{{ .Entity.Pascal }}ErrMsg = "delete {{ .Entity.Words }} handler failed"
+
+	{{ .Entity.Camel }}ListPage      = "{{ .Entity.Snake }}/list_{{ .Entity.SnakePlural }}"
+	{{ .Entity.Camel }}FormFragment  = "fragments/form/modal"
+	{{ .Entity.Camel }}RowFragment   = "fragments/table/row"
+	{{ .Entity.Camel }}TbodyOOBSwap  = "afterbegin:#{{ .Entity.KebabPlural }}-tbody"
+	{{ .Entity.Camel }}RowOOBReplace = "true"
+)
+
+// {{ .Entity.Pascal }}Service is declared by its consumer. The handler never imports the
+// service package; only common/wire knows both sides.
+type {{ .Entity.Pascal }}Service interface {
+	List{{ .Entity.PascalPlural }}(ctx context.Context) ([]domain.{{ .Entity.Pascal }}, error)
+	List{{ .Entity.Pascal }}Lookups(ctx context.Context) ([]domain.{{ .Entity.Pascal }}, error)
+	Get{{ .Entity.Pascal }}ByID(ctx context.Context, id uint) (*domain.{{ .Entity.Pascal }}, error)
+	Get{{ .Entity.Pascal }}ByIDSummary(ctx context.Context, id uint) (*domain.{{ .Entity.Pascal }}, error)
+	Create{{ .Entity.Pascal }}(ctx context.Context, {{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) error
+	Update{{ .Entity.Pascal }}(ctx context.Context, {{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) error
+	Delete{{ .Entity.Pascal }}(ctx context.Context, id uint) error
+}
+{{- range .RefFields }}
+
+// {{ .RefEntity.Pascal }}LookupService is the narrow slice of the {{ .RefEntity.Words }} service this
+// handler needs to fill the relation <select>. A ref field composes services
+// through an interface of its own rather than reaching for the whole thing.
+type {{ .RefEntity.Pascal }}LookupService interface {
+	List{{ .RefEntity.Pascal }}Lookups(ctx context.Context) ([]domain.{{ .RefEntity.Pascal }}, error)
+}
+{{- end }}
+
+type {{ .Entity.Pascal }} struct {
+	service {{ .Entity.Pascal }}Service
+{{- range .RefFields }}
+	{{ .RefEntity.Camel }}Service {{ .RefEntity.Pascal }}LookupService
+{{- end }}
+}
+
+{{ if .HasRef -}}
+func New{{ .Entity.Pascal }}(
+	service {{ .Entity.Pascal }}Service{{ range .RefFields }},
+	{{ .RefEntity.Camel }}Service {{ .RefEntity.Pascal }}LookupService{{ end }}) *{{ .Entity.Pascal }} {
+{{- else -}}
+func New{{ .Entity.Pascal }}(service {{ .Entity.Pascal }}Service) *{{ .Entity.Pascal }} {
+{{- end }}
+	return &{{ .Entity.Pascal }}{
+		service: service,
+{{- range .RefFields }}
+		{{ .RefEntity.Camel }}Service: {{ .RefEntity.Camel }}Service,
+{{- end }}
+	}
+}
+
+func (ctrl *{{ .Entity.Pascal }}) List{{ .Entity.PascalPlural }}View() gin.HandlerFunc {
+	return func(c *gin.Context) { //nolint:varnamelen
+		session := helper.MustGetSession(c)
+		{{ .Entity.CamelPlural }}, err := ctrl.service.List{{ .Entity.PascalPlural }}(c.Request.Context())
+		if err != nil {
+			helper.RenderErrorPage(c, session, http.StatusInternalServerError,
+				list{{ .Entity.PascalPlural }}ErrMsg, helper.UnexpectedErrorMessageID, err)
+			return
+		}
+		response := mapper.Domain{{ .Entity.PascalPlural }}To{{ .Entity.PascalPlural }}ViewResponse(session, {{ .Entity.CamelPlural }})
+		c.HTML(http.StatusOK, {{ .Entity.Camel }}ListPage, response)
+	}
+}
+
+func (ctrl *{{ .Entity.Pascal }}) Create{{ .Entity.Pascal }}View() gin.HandlerFunc {
+	return func(c *gin.Context) { //nolint:varnamelen
+		session := helper.MustGetSession(c)
+{{- if .HasRef }}
+{{- range .RefFields }}
+		{{ .RefEntity.CamelPlural }}, err := ctrl.{{ .RefEntity.Camel }}Service.List{{ .RefEntity.Pascal }}Lookups(c.Request.Context())
+		if err != nil {
+			helper.RenderErrorPage(c, session, http.StatusInternalServerError,
+				create{{ $.Entity.Pascal }}ErrMsg, helper.UnexpectedErrorMessageID, err)
+			return
+		}
+{{- end }}
+{{- end }}
+		c.HTML(http.StatusOK, {{ .Entity.Camel }}FormFragment,
+			mapper.Domain{{ .Entity.Pascal }}ToFormView(session, nil{{ range .RefFields }}, {{ .RefEntity.CamelPlural }}{{ end }}, false, ""))
+	}
+}
+
+func (ctrl *{{ .Entity.Pascal }}) Create{{ .Entity.Pascal }}Process() gin.HandlerFunc {
+	return func(c *gin.Context) { //nolint:varnamelen
+		session := helper.MustGetSession(c)
+		var request dto.{{ .Entity.Pascal }}
+		if err := c.ShouldBind(&request); err != nil {
+			ctrl.renderFormError(
+				c, &request, false, create{{ .Entity.Pascal }}ErrMsg, helper.InvalidFormDataMessageID, err)
+			return
+		}
+{{- if .HasParse }}
+		{{ .Entity.Camel }}, err := mapper.DTO{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}(&request, 0)
+		if err != nil {
+			ctrl.renderFormError(
+				c, &request, false, create{{ .Entity.Pascal }}ErrMsg, helper.InvalidFormDataMessageID, err)
+			return
+		}
+		if err = ctrl.service.Create{{ .Entity.Pascal }}(c.Request.Context(), {{ .Entity.Camel }}); err != nil {
+			ctrl.renderFormError(
+				c, &request, false, create{{ .Entity.Pascal }}ErrMsg, helper.UnexpectedErrorMessageID, err)
+			return
+		}
+{{- else }}
+		{{ .Entity.Camel }} := mapper.DTO{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}(&request, 0)
+		if err := ctrl.service.Create{{ .Entity.Pascal }}(c.Request.Context(), {{ .Entity.Camel }}); err != nil {
+			ctrl.renderFormError(
+				c, &request, false, create{{ .Entity.Pascal }}ErrMsg, helper.UnexpectedErrorMessageID, err)
+			return
+		}
+{{- end }}
+		helper.TriggerCloseModal(c)
+		c.HTML(http.StatusOK, {{ .Entity.Camel }}RowFragment,
+			mapper.Domain{{ .Entity.Pascal }}ToTableRow(session, {{ .Entity.Camel }}, {{ .Entity.Camel }}TbodyOOBSwap))
+	}
+}
+
+func (ctrl *{{ .Entity.Pascal }}) Update{{ .Entity.Pascal }}View() gin.HandlerFunc {
+	return func(c *gin.Context) { //nolint:varnamelen
+		session := helper.MustGetSession(c)
+		{{ .Entity.Camel }}ID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+		if err != nil {
+			helper.RenderErrorPage(c, session, http.StatusBadRequest,
+				get{{ .Entity.Pascal }}ErrMsg, helper.InvalidFormDataMessageID, err)
+			return
+		}
+		{{ .Entity.Camel }}, err := ctrl.service.Get{{ .Entity.Pascal }}ByID(c.Request.Context(), uint({{ .Entity.Camel }}ID))
+		if err != nil {
+			ctrl.renderLoadError(c, err)
+			return
+		}
+{{- range .RefFields }}
+		{{ .RefEntity.CamelPlural }}, err := ctrl.{{ .RefEntity.Camel }}Service.List{{ .RefEntity.Pascal }}Lookups(c.Request.Context())
+		if err != nil {
+			helper.RenderErrorPage(c, session, http.StatusInternalServerError,
+				get{{ $.Entity.Pascal }}ErrMsg, helper.UnexpectedErrorMessageID, err)
+			return
+		}
+{{- end }}
+		c.HTML(http.StatusOK, {{ .Entity.Camel }}FormFragment,
+			mapper.Domain{{ .Entity.Pascal }}ToFormView(session, mapper.Domain{{ .Entity.Pascal }}ToDTO{{ .Entity.Pascal }}({{ .Entity.Camel }}){{ range .RefFields }}, {{ .RefEntity.CamelPlural }}{{ end }}, true, ""))
+	}
+}
+
+func (ctrl *{{ .Entity.Pascal }}) Update{{ .Entity.Pascal }}Process() gin.HandlerFunc {
+	return func(c *gin.Context) { //nolint:varnamelen
+		session := helper.MustGetSession(c)
+		{{ .Entity.Camel }}ID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+		if err != nil {
+			helper.RenderErrorPage(c, session, http.StatusBadRequest,
+				update{{ .Entity.Pascal }}ErrMsg, helper.InvalidFormDataMessageID, err)
+			return
+		}
+		var request dto.{{ .Entity.Pascal }}
+		if bindErr := c.ShouldBind(&request); bindErr != nil {
+			request.ID = uint({{ .Entity.Camel }}ID)
+			ctrl.renderFormError(
+				c, &request, true, update{{ .Entity.Pascal }}ErrMsg, helper.InvalidFormDataMessageID, bindErr)
+			return
+		}
+		request.ID = uint({{ .Entity.Camel }}ID)
+{{- if .HasParse }}
+		{{ .Entity.Camel }}, err := mapper.DTO{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}(&request, uint({{ .Entity.Camel }}ID))
+		if err != nil {
+			ctrl.renderFormError(
+				c, &request, true, update{{ .Entity.Pascal }}ErrMsg, helper.InvalidFormDataMessageID, err)
+			return
+		}
+{{- else }}
+		{{ .Entity.Camel }} := mapper.DTO{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}(&request, uint({{ .Entity.Camel }}ID))
+{{- end }}
+		if err = ctrl.service.Update{{ .Entity.Pascal }}(c.Request.Context(), {{ .Entity.Camel }}); err != nil {
+			ctrl.renderFormError(
+				c, &request, true, update{{ .Entity.Pascal }}ErrMsg, helper.UnexpectedErrorMessageID, err)
+			return
+		}
+		helper.TriggerCloseModal(c)
+		c.HTML(http.StatusOK, {{ .Entity.Camel }}RowFragment,
+			mapper.Domain{{ .Entity.Pascal }}ToTableRow(session, {{ .Entity.Camel }}, {{ .Entity.Camel }}RowOOBReplace))
+	}
+}
+
+func (ctrl *{{ .Entity.Pascal }}) Delete{{ .Entity.Pascal }}Process() gin.HandlerFunc {
+	return func(c *gin.Context) { //nolint:varnamelen
+		{{ .Entity.Camel }}ID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+		if err != nil {
+			helper.LogError(c, delete{{ .Entity.Pascal }}ErrMsg, err)
+			c.Status(http.StatusBadRequest)
+			return
+		}
+		if err = ctrl.service.Delete{{ .Entity.Pascal }}(c.Request.Context(), uint({{ .Entity.Camel }}ID)); err != nil {
+			helper.LogError(c, delete{{ .Entity.Pascal }}ErrMsg, err)
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		// The row is removed client side by hx-swap="outerHTML" on an empty
+		// 200 body; there is nothing to render.
+		c.Status(http.StatusOK)
+	}
+}
+
+// renderFormError answers 422 with the form redisplayed: the submitted values
+// are preserved so nothing is retyped, the message is localized and generic,
+// and the real cause goes to the log.
+//
+func (ctrl *{{ .Entity.Pascal }}) renderFormError(
+	ginCtx *gin.Context, request *dto.{{ .Entity.Pascal }}, isEdit bool, logMsg, messageID string, cause error) {
+	session := helper.MustGetSession(ginCtx)
+	helper.LogError(ginCtx, logMsg, cause)
+{{- range .RefFields }}
+	{{ .RefEntity.CamelPlural }}, err := ctrl.{{ .RefEntity.Camel }}Service.List{{ .RefEntity.Pascal }}Lookups(ginCtx.Request.Context())
+	if err != nil {
+		helper.RenderErrorPage(ginCtx, session, http.StatusInternalServerError,
+			logMsg, helper.UnexpectedErrorMessageID, err)
+		return
+	}
+{{- end }}
+	ginCtx.HTML(http.StatusUnprocessableEntity, {{ .Entity.Camel }}FormFragment,
+		mapper.Domain{{ .Entity.Pascal }}ToFormView(session, request{{ range .RefFields }}, {{ .RefEntity.CamelPlural }}{{ end }}, isEdit,
+			helper.LocalizedMessage(session, messageID)))
+}
+
+// renderLoadError keeps the 404/500 split in one place: a record that does not
+// exist is not a server failure, and the sentinel lives in the domain so this
+// layer can tell them apart without importing the service package.
+//
+func (ctrl *{{ .Entity.Pascal }}) renderLoadError(ginCtx *gin.Context, err error) {
+	session := helper.MustGetSession(ginCtx)
+	if errors.Is(err, domain.Err{{ .Entity.Pascal }}NotFound) {
+		helper.RenderErrorPage(ginCtx, session, http.StatusNotFound,
+			get{{ .Entity.Pascal }}ErrMsg, helper.NotFoundErrorMessageID, err)
+		return
+	}
+	helper.RenderErrorPage(ginCtx, session, http.StatusInternalServerError,
+		get{{ .Entity.Pascal }}ErrMsg, helper.UnexpectedErrorMessageID, err)
+}
+{{ end }}

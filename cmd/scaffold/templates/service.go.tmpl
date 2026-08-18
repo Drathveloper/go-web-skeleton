@@ -1,0 +1,121 @@
+{{ define "service.go" -}}
+package service
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"{{ .Module }}/common/constants"
+	"{{ .Module }}/common/database"
+	"{{ .Module }}/{{ .Context.Snake }}/domain"
+)
+
+const (
+	list{{ .Entity.PascalPlural }}ErrMsg  = "list {{ .Entity.WordsPlural }} service failed"
+	get{{ .Entity.Pascal }}ByIDErrMsg = "get {{ .Entity.Words }} by id service failed"
+	create{{ .Entity.Pascal }}ErrMsg  = "create {{ .Entity.Words }} service failed"
+	update{{ .Entity.Pascal }}ErrMsg  = "update {{ .Entity.Words }} service failed"
+	delete{{ .Entity.Pascal }}ErrMsg  = "delete {{ .Entity.Words }} service failed"
+)
+
+// {{ .Entity.Pascal }}Repository is declared here, by the consumer, not next to its
+// implementation: the service never imports the repository package and only
+// common/wire sees both sides.
+type {{ .Entity.Pascal }}Repository interface {
+	Find{{ .Entity.Pascal }}ByID(ctx context.Context, id uint) (*domain.{{ .Entity.Pascal }}, error)
+	Find{{ .Entity.Pascal }}ByIDSummary(ctx context.Context, id uint) (*domain.{{ .Entity.Pascal }}, error)
+	FindAll{{ .Entity.PascalPlural }}(ctx context.Context) ([]domain.{{ .Entity.Pascal }}, error)
+	FindAll{{ .Entity.Pascal }}Lookups(ctx context.Context) ([]domain.{{ .Entity.Pascal }}, error)
+	Create{{ .Entity.Pascal }}(ctx context.Context, {{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) (*domain.{{ .Entity.Pascal }}, error)
+	Update{{ .Entity.Pascal }}(ctx context.Context, {{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) (*domain.{{ .Entity.Pascal }}, error)
+	Delete{{ .Entity.Pascal }}(ctx context.Context, id uint) error
+}
+
+type {{ .Entity.Pascal }} struct {
+	repository {{ .Entity.Pascal }}Repository
+}
+
+func New{{ .Entity.Pascal }}(repository {{ .Entity.Pascal }}Repository) *{{ .Entity.Pascal }} {
+	return &{{ .Entity.Pascal }}{
+		repository: repository,
+	}
+}
+
+func ({{ .Entity.Receiver }} *{{ .Entity.Pascal }}) List{{ .Entity.PascalPlural }}(
+	ctx context.Context) ([]domain.{{ .Entity.Pascal }}, error) {
+	{{ .Entity.CamelPlural }}, err := {{ .Entity.Receiver }}.repository.FindAll{{ .Entity.PascalPlural }}(ctx)
+	if err != nil {
+		return nil, fmt.Errorf(constants.DefaultWrappedErrorTemplate, list{{ .Entity.PascalPlural }}ErrMsg, err)
+	}
+	return {{ .Entity.CamelPlural }}, nil
+}
+
+func ({{ .Entity.Receiver }} *{{ .Entity.Pascal }}) List{{ .Entity.Pascal }}Lookups(
+	ctx context.Context) ([]domain.{{ .Entity.Pascal }}, error) {
+	{{ .Entity.CamelPlural }}, err := {{ .Entity.Receiver }}.repository.FindAll{{ .Entity.Pascal }}Lookups(ctx)
+	if err != nil {
+		return nil, fmt.Errorf(constants.DefaultWrappedErrorTemplate, list{{ .Entity.PascalPlural }}ErrMsg, err)
+	}
+	return {{ .Entity.CamelPlural }}, nil
+}
+
+func ({{ .Entity.Receiver }} *{{ .Entity.Pascal }}) Get{{ .Entity.Pascal }}ByID(
+	ctx context.Context, id uint) (*domain.{{ .Entity.Pascal }}, error) {
+	{{ .Entity.Camel }}, err := {{ .Entity.Receiver }}.repository.Find{{ .Entity.Pascal }}ByID(ctx, id)
+	if err != nil {
+		switch {
+		case errors.Is(err, database.ErrRecordNotFound):
+			return nil, fmt.Errorf(
+				constants.DefaultWrappedErrorTemplate, get{{ .Entity.Pascal }}ByIDErrMsg, domain.Err{{ .Entity.Pascal }}NotFound)
+		default:
+			return nil, fmt.Errorf(constants.DefaultWrappedErrorTemplate, get{{ .Entity.Pascal }}ByIDErrMsg, err)
+		}
+	}
+	return {{ .Entity.Camel }}, nil
+}
+
+func ({{ .Entity.Receiver }} *{{ .Entity.Pascal }}) Get{{ .Entity.Pascal }}ByIDSummary(
+	ctx context.Context, id uint) (*domain.{{ .Entity.Pascal }}, error) {
+	{{ .Entity.Camel }}, err := {{ .Entity.Receiver }}.repository.Find{{ .Entity.Pascal }}ByIDSummary(ctx, id)
+	if err != nil {
+		switch {
+		case errors.Is(err, database.ErrRecordNotFound):
+			return nil, fmt.Errorf(
+				constants.DefaultWrappedErrorTemplate, get{{ .Entity.Pascal }}ByIDErrMsg, domain.Err{{ .Entity.Pascal }}NotFound)
+		default:
+			return nil, fmt.Errorf(constants.DefaultWrappedErrorTemplate, get{{ .Entity.Pascal }}ByIDErrMsg, err)
+		}
+	}
+	return {{ .Entity.Camel }}, nil
+}
+
+func ({{ .Entity.Receiver }} *{{ .Entity.Pascal }}) Create{{ .Entity.Pascal }}(
+	ctx context.Context, {{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) error {
+	created, err := {{ .Entity.Receiver }}.repository.Create{{ .Entity.Pascal }}(ctx, {{ .Entity.Camel }})
+	if err != nil {
+		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, create{{ .Entity.Pascal }}ErrMsg, err)
+	}
+	*{{ .Entity.Camel }} = *created
+	return nil
+}
+
+func ({{ .Entity.Receiver }} *{{ .Entity.Pascal }}) Update{{ .Entity.Pascal }}(
+	ctx context.Context, {{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) error {
+	updated, err := {{ .Entity.Receiver }}.repository.Update{{ .Entity.Pascal }}(ctx, {{ .Entity.Camel }})
+	if err != nil {
+		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, update{{ .Entity.Pascal }}ErrMsg, err)
+	}
+	*{{ .Entity.Camel }} = *updated
+	return nil
+}
+
+func ({{ .Entity.Receiver }} *{{ .Entity.Pascal }}) Delete{{ .Entity.Pascal }}(
+	ctx context.Context, id uint) error {
+	err := {{ .Entity.Receiver }}.repository.Delete{{ .Entity.Pascal }}(ctx, id)
+	if err != nil {
+		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, delete{{ .Entity.Pascal }}ErrMsg, err)
+	}
+	return nil
+}
+{{ end }}

@@ -6,7 +6,6 @@ import (
 	commondomain "github.com/Drathveloper/go-web-skeleton/common/domain"
 	commondto "github.com/Drathveloper/go-web-skeleton/common/http/dto"
 	commonmapper "github.com/Drathveloper/go-web-skeleton/common/http/mapper"
-	"github.com/Drathveloper/go-web-skeleton/common/i18n"
 	"github.com/Drathveloper/go-web-skeleton/example/domain"
 	"github.com/Drathveloper/go-web-skeleton/example/http/dto"
 )
@@ -24,9 +23,9 @@ func DomainItemCategoriesToItemCategoriesViewResponse(
 	return commonmapper.MapDataToViewResponse(&data, getItemCategoryBreadcrumb(session), session)
 }
 
-// DomainItemCategoriesToTableView builds the whole listing. The page template
-// is a single call into the shared table component, so a change to the table
-// design is one edit here and not one per generated module.
+// DomainItemCategoriesToTableView builds the whole listing. The page template is a
+// single call into the shared table component, so a change to the table design
+// is one edit there and not one per generated module.
 func DomainItemCategoriesToTableView(
 	session *commondomain.Session, itemCategories []domain.ItemCategory) commondto.TableView {
 	rows := make([]commondto.TableRow, 0, len(itemCategories))
@@ -64,8 +63,8 @@ func DomainItemCategoryToTableRow(
 	}
 }
 
-// DomainItemCategoryToFormView renders both create and update: the only
-// difference is the action URL and the title, so there is one form, not two.
+// DomainItemCategoryToFormView renders both create and update: the only difference is
+// the action URL and the title, so there is one form, not two.
 func DomainItemCategoryToFormView(
 	session *commondomain.Session,
 	itemCategory *dto.ItemCategory,
@@ -89,31 +88,16 @@ func DomainItemCategoryToFormView(
 				Name:     "name",
 				Label:    localize(session, "item_category.fields.name"),
 				Type:     commondto.FieldTypeText,
-				Value:    itemCategoryFieldName(itemCategory),
+				Value:    itemCategoryField(itemCategory, func(i *dto.ItemCategory) string { return i.Name }),
 				Required: true,
 			},
 		},
 	}
 }
 
-func itemCategoryFieldName(itemCategory *dto.ItemCategory) string {
-	if itemCategory == nil {
-		return ""
-	}
-	return itemCategory.Name
-}
-
-func DomainItemCategoriesToDTOItemCategories(itemCategories []domain.ItemCategory) []dto.ItemCategory {
-	result := make([]dto.ItemCategory, 0, len(itemCategories))
-	for i := range itemCategories {
-		result = append(result, *DomainItemCategoryToDTOItemCategory(&itemCategories[i]))
-	}
-	return result
-}
-
-func DTOItemCategoryToDomainItemCategory(itemCategory *dto.ItemCategory, id uint) *domain.ItemCategory {
+func DTOItemCategoryToDomainItemCategory(itemCategory *dto.ItemCategory, itemCategoryID uint) *domain.ItemCategory {
 	return &domain.ItemCategory{
-		ID:   id,
+		ID:   itemCategoryID,
 		Name: itemCategory.Name,
 	}
 }
@@ -125,13 +109,21 @@ func DomainItemCategoryToDTOItemCategory(itemCategory *domain.ItemCategory) *dto
 	}
 }
 
-func getItemCategoryBreadcrumb(session *commondomain.Session) []string {
-	return []string{localize(session, "example.title"), localize(session, "item_category.title")}
+func DomainItemCategoriesToDTOItemCategories(itemCategories []domain.ItemCategory) []dto.ItemCategory {
+	result := make([]dto.ItemCategory, 0, len(itemCategories))
+	for i := range itemCategories {
+		result = append(result, *DomainItemCategoryToDTOItemCategory(&itemCategories[i]))
+	}
+	return result
 }
 
-// localize resolves a catalog key in the language of the current session. Every
-// string a mapper puts into a view has already been through here: the shared
-// components receive text, never keys.
-func localize(session *commondomain.Session, messageID string) string {
-	return i18n.LocalizeMessage(session.Language, messageID)
+func itemCategoryField(itemCategory *dto.ItemCategory, get func(*dto.ItemCategory) string) string {
+	if itemCategory == nil {
+		return ""
+	}
+	return get(itemCategory)
+}
+
+func getItemCategoryBreadcrumb(session *commondomain.Session) []string {
+	return []string{localize(session, "example.title"), localize(session, "item_category.title")}
 }

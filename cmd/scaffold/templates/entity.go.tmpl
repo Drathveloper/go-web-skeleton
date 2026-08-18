@@ -1,0 +1,25 @@
+{{ define "entity.go" -}}
+package entity
+
+{{ if .HasTime -}}
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+{{- else -}}
+import "gorm.io/gorm"
+{{- end }}
+
+type {{ .Entity.Pascal }} struct {
+	gorm.Model
+
+{{ range .EntityFields }}
+	{{ .Pascal }} {{ .DomainType }} `gorm:"{{ .GormTag }}"`
+{{- end }}
+}
+
+func ({{ .Entity.Pascal }}) TableName() string {
+	return "{{ .Entity.SnakePlural }}"
+}
+{{ end }}

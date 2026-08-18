@@ -1,25 +1,25 @@
 {
   "item": {
-    "title": "Artículos",
-    "subtitle": "Todo lo que el catálogo vende",
+    "title": "Items",
+    "subtitle": "",
     "actions": {
-      "new": "Nuevo artículo",
-      "edit": "Editar artículo"
+      "new": "New item",
+      "edit": "Edit item"
     },
     "fields": {
-      "name": "Nombre",
-      "notes": "Notas",
-      "stock": "Existencias",
-      "price": "Precio",
-      "contact": "Email de contacto",
-      "released_at": "Fecha de lanzamiento",
-      "starts_at": "Comienza el",
-      "category_id": "Categoría",
-      "active": "Activo"
+      "name": "Name",
+      "notes": "Notes",
+      "stock": "Stock",
+      "price": "Price",
+      "contact": "Contact",
+      "released_at": "Released at",
+      "starts_at": "Starts at",
+      "category_id": "Category id",
+      "active": "Active"
     },
     "active": {
-      "yes": "Activo",
-      "no": "Inactivo"
+      "yes": "Active",
+      "no": "Not active"
     }
   }
 }

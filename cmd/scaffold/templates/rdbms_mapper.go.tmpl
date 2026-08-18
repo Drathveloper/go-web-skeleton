@@ -1,0 +1,57 @@
+{{ define "rdbms_mapper.go" -}}
+package mapper
+
+import (
+	"gorm.io/gorm"
+
+	"{{ .Module }}/{{ .Context.Snake }}/domain"
+	"{{ .Module }}/{{ .Context.Snake }}/repository/rdbms/entity"
+)
+
+func Entity{{ .Entity.PascalPlural }}ToDomain{{ .Entity.PascalPlural }}(entities []entity.{{ .Entity.Pascal }}) []domain.{{ .Entity.Pascal }} {
+	if len(entities) == 0 {
+		return []domain.{{ .Entity.Pascal }}{}
+	}
+	{{ .Entity.CamelPlural }} := make([]domain.{{ .Entity.Pascal }}, 0, len(entities))
+	for _, e := range entities {
+		{{ .Entity.CamelPlural }} = append({{ .Entity.CamelPlural }}, *Entity{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}(&e))
+	}
+	return {{ .Entity.CamelPlural }}
+}
+
+func Entity{{ .Entity.Pascal }}ToDomain{{ .Entity.Pascal }}({{ .Entity.Camel }} *entity.{{ .Entity.Pascal }}) *domain.{{ .Entity.Pascal }} {
+	if {{ .Entity.Camel }} == nil {
+		return &domain.{{ .Entity.Pascal }}{}
+	}
+	return &domain.{{ .Entity.Pascal }}{
+		ID: {{ .Entity.Camel }}.ID,
+{{- range .Fields }}
+		{{ .Pascal }}: {{ $.Entity.Camel }}.{{ .Pascal }},
+{{- end }}
+{{- range .RefFields }}
+		{{ .RelationPascal }}: entity{{ .RefEntity.Pascal }}OrNil({{ $.Entity.Camel }}.{{ .RelationPascal }}),
+{{- end }}
+	}
+}
+
+func Domain{{ .Entity.Pascal }}ToEntity{{ .Entity.Pascal }}({{ .Entity.Camel }} *domain.{{ .Entity.Pascal }}) *entity.{{ .Entity.Pascal }} {
+	return &entity.{{ .Entity.Pascal }}{
+		Model: gorm.Model{ID: {{ .Entity.Camel }}.ID},
+{{- range .Fields }}
+		{{ .Pascal }}: {{ $.Entity.Camel }}.{{ .Pascal }},
+{{- end }}
+	}
+}
+{{- range .RefFields }}
+
+// entity{{ .RefEntity.Pascal }}OrNil keeps an absent relation absent. The plain mapper
+// returns a zero value for nil, which would make the view render a {{ .RefEntity.Words }}
+// named "" with id 0 instead of showing nothing.
+func entity{{ .RefEntity.Pascal }}OrNil({{ .RefEntity.Camel }} *entity.{{ .RefEntity.Pascal }}) *domain.{{ .RefEntity.Pascal }} {
+	if {{ .RefEntity.Camel }} == nil {
+		return nil
+	}
+	return Entity{{ .RefEntity.Pascal }}ToDomain{{ .RefEntity.Pascal }}({{ .RefEntity.Camel }})
+}
+{{- end }}
+{{ end }}

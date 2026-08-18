@@ -16,21 +16,20 @@ const (
 	itemBasePath  = "/item"
 	itemTableID   = "items"
 	itemRowPrefix = "item-row-"
-
-	// dateLayout and dateTimeLayout are the wire formats of <input type="date">
-	// and <input type="datetime-local">. They are not display formats: what the
-	// user sees is the browser's locale rendering of these values.
-	dateLayout     = "2006-01-02"
-	dateTimeLayout = "2006-01-02T15:04"
 )
 
 func DomainItemsToItemsViewResponse(
-	session *commondomain.Session, items []domain.Item) *commondto.ViewResponse[commondto.TableView] {
+	session *commondomain.Session,
+	items []domain.Item) *commondto.ViewResponse[commondto.TableView] {
 	data := DomainItemsToTableView(session, items)
 	return commonmapper.MapDataToViewResponse(&data, getItemBreadcrumb(session), session)
 }
 
-func DomainItemsToTableView(session *commondomain.Session, items []domain.Item) commondto.TableView {
+// DomainItemsToTableView builds the whole listing. The page template is a
+// single call into the shared table component, so a change to the table design
+// is one edit there and not one per generated module.
+func DomainItemsToTableView(
+	session *commondomain.Session, items []domain.Item) commondto.TableView {
 	rows := make([]commondto.TableRow, 0, len(items))
 	for i := range items {
 		rows = append(rows, DomainItemToTableRow(session, &items[i], ""))
@@ -44,10 +43,11 @@ func DomainItemsToTableView(session *commondomain.Session, items []domain.Item) 
 		Language: session.Language,
 		Columns: []commondto.TableColumn{
 			{Label: localize(session, "item.fields.name"), SortKey: "name"},
-			{Label: localize(session, "item.fields.category_id"), SortKey: "category"},
 			{Label: localize(session, "item.fields.stock"), SortKey: "stock", Align: "right"},
 			{Label: localize(session, "item.fields.price"), SortKey: "price", Align: "right"},
+			{Label: localize(session, "item.fields.contact"), SortKey: "contact"},
 			{Label: localize(session, "item.fields.released_at"), SortKey: "released_at"},
+			{Label: localize(session, "item.fields.category_id"), SortKey: "category_id"},
 			{Label: localize(session, "item.fields.active"), SortKey: "active", Align: "center"},
 			{Label: localize(session, "actions.title"), Align: "right"},
 		},
@@ -67,25 +67,24 @@ func DomainItemToTableRow(
 		OOB:       oob,
 		Cells: []commondto.TableCell{
 			{Text: item.Name, Secondary: "#" + itemID, SecondaryMono: true, Strong: true},
-			{Text: itemCategoryName(item)},
 			{Text: strconv.FormatUint(uint64(item.Stock), 10), Align: "right", Mono: true},
 			{Text: *commonmapper.UintToDecimalString(item.Price), Align: "right", Mono: true},
-			{Text: formatDate(item.ReleasedAt)},
+			{Text: item.Contact},
+			{Text: commonmapper.FormatDate(item.ReleasedAt)},
+			{Text: itemCategoryName(item)},
 			{Text: activeLabel(session, item.Active), Badge: activeBadge(item.Active), Align: "center"},
 		},
 	}
 }
 
-// DomainItemToFormView renders create and update alike.
+// DomainItemToFormView renders both create and update: the only difference is
+// the action URL and the title, so there is one form, not two.
 //
-// generator supports appears here exactly once: text, textarea, number,
-// checkbox, date, datetime, money, email and a select fed by a lookup.
-//
-//nolint:funlen // a declarative list with one literal per module field Every field type the
+//nolint:funlen // a declarative list with one literal per module field
 func DomainItemToFormView(
 	session *commondomain.Session,
 	item *dto.Item,
-	categories []domain.ItemCategory,
+	itemCategories []domain.ItemCategory,
 	isEdit bool,
 	errMsg string) commondto.FormView {
 	action := itemBasePath + "/new"
@@ -154,7 +153,7 @@ func DomainItemToFormView(
 				Name:     "category_id",
 				Label:    localize(session, "item.fields.category_id"),
 				Type:     commondto.FieldTypeSelect,
-				Options:  itemCategoryOptions(categories),
+				Options:  itemCategoryOptions(itemCategories),
 				Selected: itemSelectedCategory(item),
 				Required: true,
 			},
@@ -168,19 +167,18 @@ func DomainItemToFormView(
 	}
 }
 
-// DTOItemToDomainItem converts the submitted form. Money arrives as a decimal
-// string and is stored in cents; the dates arrive in the <input> wire formats.
-// A malformed value is an error, never a silently zeroed field.
+// DTOItemToDomainItem converts the submitted form. A malformed value is an
+// error, never a silently zeroed field.
 func DTOItemToDomainItem(item *dto.Item, itemID uint) (*domain.Item, error) {
 	price, err := commonmapper.ParseDecimalToUint(item.Price)
 	if err != nil {
 		return nil, fmt.Errorf("parse item price failed: %w", err)
 	}
-	releasedAt, err := time.Parse(dateLayout, item.ReleasedAt)
+	releasedAt, err := time.Parse(commonmapper.DateLayout, item.ReleasedAt)
 	if err != nil {
 		return nil, fmt.Errorf("parse item released_at failed: %w", err)
 	}
-	startsAt, err := time.Parse(dateTimeLayout, item.StartsAt)
+	startsAt, err := time.Parse(commonmapper.DateTimeLayout, item.StartsAt)
 	if err != nil {
 		return nil, fmt.Errorf("parse item starts_at failed: %w", err)
 	}
@@ -189,12 +187,12 @@ func DTOItemToDomainItem(item *dto.Item, itemID uint) (*domain.Item, error) {
 		Name:       item.Name,
 		Notes:      item.Notes,
 		Stock:      item.Stock,
-		Active:     item.Active,
-		ReleasedAt: releasedAt,
-		StartsAt:   startsAt,
 		Price:      *price,
 		Contact:    item.Contact,
+		ReleasedAt: releasedAt,
+		StartsAt:   startsAt,
 		CategoryID: item.CategoryID,
+		Active:     item.Active,
 	}, nil
 }
 
@@ -204,12 +202,12 @@ func DomainItemToDTOItem(item *domain.Item) *dto.Item {
 		Name:       item.Name,
 		Notes:      item.Notes,
 		Stock:      item.Stock,
-		Active:     item.Active,
-		ReleasedAt: formatDate(item.ReleasedAt),
-		StartsAt:   formatDateTime(item.StartsAt),
 		Price:      *commonmapper.UintToDecimalString(item.Price),
 		Contact:    item.Contact,
+		ReleasedAt: commonmapper.FormatDate(item.ReleasedAt),
+		StartsAt:   commonmapper.FormatDateTime(item.StartsAt),
 		CategoryID: item.CategoryID,
+		Active:     item.Active,
 	}
 }
 
@@ -221,12 +219,12 @@ func DomainItemsToDTOItems(items []domain.Item) []dto.Item {
 	return result
 }
 
-func itemCategoryOptions(categories []domain.ItemCategory) []commondto.SelectOption {
-	options := make([]commondto.SelectOption, 0, len(categories))
-	for i := range categories {
+func itemCategoryOptions(itemCategories []domain.ItemCategory) []commondto.SelectOption {
+	options := make([]commondto.SelectOption, 0, len(itemCategories))
+	for i := range itemCategories {
 		options = append(options, commondto.SelectOption{
-			Value: strconv.FormatUint(uint64(categories[i].ID), 10),
-			Label: categories[i].Name,
+			Value: strconv.FormatUint(uint64(itemCategories[i].ID), 10),
+			Label: itemCategories[i].Name,
 		})
 	}
 	return options
@@ -251,22 +249,6 @@ func itemField(item *dto.Item, get func(*dto.Item) string) string {
 		return ""
 	}
 	return get(item)
-}
-
-// formatDate and formatDateTime keep a zero time rendering as an empty control
-// rather than as year 1, which is what a naive Format would put on screen.
-func formatDate(value time.Time) string {
-	if value.IsZero() {
-		return ""
-	}
-	return value.Format(dateLayout)
-}
-
-func formatDateTime(value time.Time) string {
-	if value.IsZero() {
-		return ""
-	}
-	return value.Format(dateTimeLayout)
 }
 
 func activeLabel(session *commondomain.Session, active bool) string {

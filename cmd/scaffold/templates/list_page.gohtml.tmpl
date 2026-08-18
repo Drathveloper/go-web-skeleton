@@ -1,0 +1,7 @@
+{{ define "list_page.gohtml" -}}
+{{ "{{" }} define "title" {{ "}}" }}{{ "{{" }} .Data.Title {{ "}}" }}{{ "{{" }} end {{ "}}" }}
+
+{{ "{{" }} define "content" {{ "}}" }}
+  {{ "{{" }} template "table" .Data {{ "}}" }}
+{{ "{{" }} end {{ "}}" }}
+{{ end }}

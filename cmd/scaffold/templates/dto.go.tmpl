@@ -1,0 +1,25 @@
+{{ define "dto.go" -}}
+package dto
+
+// {{ .Entity.Pascal }} is the form payload. Tags are `binding:` and never `validate:` — gin's
+// binder only reads the former, so a `validate:` tag here would look like
+// validation while silently never running.
+{{- if .HasMoney }}
+//
+// Money fields are strings, not numbers: an amount arrives as "12.34" and is
+// converted to cents by the mapper, with `decimal2` enforcing the shape.
+{{- end }}
+type {{ .Entity.Pascal }} struct {
+{{- range .DTOFields }}
+	{{ .Pascal }} {{ .DTOType }} `{{ .TagPrefix }}form:"{{ .Snake }}"`
+{{- end }}
+}
+
+type {{ .Entity.PascalPlural }}Response struct {
+	{{ .Entity.PascalPlural }} []{{ .Entity.Pascal }}
+}
+
+type {{ .Entity.Pascal }}Response struct {
+	{{ .Entity.Pascal }} *{{ .Entity.Pascal }}
+}
+{{ end }}

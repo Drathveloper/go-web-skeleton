@@ -1,10 +1,10 @@
 {
   "item_category": {
     "title": "Item categories",
-    "subtitle": "Groups the items belong to",
+    "subtitle": "",
     "actions": {
-      "new": "New category",
-      "edit": "Edit category"
+      "new": "New item category",
+      "edit": "Edit item category"
     },
     "fields": {
       "name": "Name"

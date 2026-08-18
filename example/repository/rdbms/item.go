@@ -23,9 +23,11 @@ const (
 	deleteItemErrMsg   = "delete item repository failed"
 )
 
-// itemCategoryRelation is preloaded so a listing can show the category name
+// The relations below are preloaded so a listing can show the related name
 // without the handler issuing one query per row.
-const itemCategoryRelation = "Category"
+const (
+	itemCategoryRelation = "Category"
+)
 
 type Item struct {
 	db rdbms.PostgresClient
@@ -37,7 +39,8 @@ func NewItem(db rdbms.PostgresClient) *Item {
 	}
 }
 
-func (i *Item) FindAllItems(ctx context.Context) ([]domain.Item, error) {
+func (i *Item) FindAllItems(
+	ctx context.Context) ([]domain.Item, error) {
 	var itemsEntity []entity.Item
 
 	err := i.db.WithContext(ctx).
@@ -50,7 +53,8 @@ func (i *Item) FindAllItems(ctx context.Context) ([]domain.Item, error) {
 	return mapper.EntityItemsToDomainItems(itemsEntity), nil
 }
 
-func (i *Item) FindAllItemLookups(ctx context.Context) ([]domain.Item, error) {
+func (i *Item) FindAllItemLookups(
+	ctx context.Context) ([]domain.Item, error) {
 	var itemsEntity []entity.Item
 
 	err := i.db.WithContext(ctx).
@@ -63,7 +67,8 @@ func (i *Item) FindAllItemLookups(ctx context.Context) ([]domain.Item, error) {
 	return mapper.EntityItemsToDomainItems(itemsEntity), nil
 }
 
-func (i *Item) FindItemByID(ctx context.Context, itemID uint) (*domain.Item, error) {
+func (i *Item) FindItemByID(
+	ctx context.Context, itemID uint) (*domain.Item, error) {
 	var itemEntity entity.Item
 
 	err := i.db.WithContext(ctx).
@@ -82,7 +87,8 @@ func (i *Item) FindItemByID(ctx context.Context, itemID uint) (*domain.Item, err
 	return mapper.EntityItemToDomainItem(&itemEntity), nil
 }
 
-func (i *Item) FindItemByIDSummary(ctx context.Context, itemID uint) (*domain.Item, error) {
+func (i *Item) FindItemByIDSummary(
+	ctx context.Context, itemID uint) (*domain.Item, error) {
 	var itemEntity entity.Item
 
 	err := i.db.WithContext(ctx).
@@ -101,7 +107,8 @@ func (i *Item) FindItemByIDSummary(ctx context.Context, itemID uint) (*domain.It
 	return mapper.EntityItemToDomainItem(&itemEntity), nil
 }
 
-func (i *Item) CreateItem(ctx context.Context, item *domain.Item) (*domain.Item, error) {
+func (i *Item) CreateItem(
+	ctx context.Context, item *domain.Item) (*domain.Item, error) {
 	itemEntity := mapper.DomainItemToEntityItem(item)
 
 	err := i.db.WithContext(ctx).
@@ -118,13 +125,14 @@ func (i *Item) CreateItem(ctx context.Context, item *domain.Item) (*domain.Item,
 	return item, nil
 }
 
-func (i *Item) UpdateItem(ctx context.Context, item *domain.Item) (*domain.Item, error) {
+func (i *Item) UpdateItem(
+	ctx context.Context, item *domain.Item) (*domain.Item, error) {
 	itemEntity := mapper.DomainItemToEntityItem(item)
 
 	err := i.db.WithContext(ctx).
 		Where("id = ?", itemEntity.ID).
-		Select("name", "notes", "contact", "released_at", "starts_at",
-			"stock", "price", "category_id", "active", "updated_at").
+		Select("name", "notes", "stock", "price", "contact", "released_at", "starts_at", "category_id", "active",
+			"updated_at").
 		Updates(itemEntity).Error
 	if err != nil {
 		return nil, fmt.Errorf(constants.DefaultWrappedErrorTemplate, updateItemErrMsg, err)
@@ -138,7 +146,8 @@ func (i *Item) UpdateItem(ctx context.Context, item *domain.Item) (*domain.Item,
 	return item, nil
 }
 
-func (i *Item) DeleteItem(ctx context.Context, itemID uint) error {
+func (i *Item) DeleteItem(
+	ctx context.Context, itemID uint) error {
 	err := i.db.WithContext(ctx).
 		Delete(&entity.Item{}, itemID).Error
 	if err != nil {
