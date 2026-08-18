@@ -1,0 +1,10 @@
+{{/*
+  fragments/table/row — the HTMX entry point for a single row, rendered with a
+  dto.TableRow.
+
+  Create answers with OOB "afterbegin:#<plural>-tbody" so the new row appears at
+  the top of the listing; update answers with OOB "true" so the existing row is
+  replaced in place. Because it is the generic row template, a generated module
+  ships no row markup of its own.
+*/}}
+{{ template "table/row" . }}

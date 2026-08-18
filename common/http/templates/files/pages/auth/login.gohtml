@@ -1,0 +1,36 @@
+{{ define "title" }}{{ localize .Language "auth.login.title" }}{{ end }}
+
+{{/*
+  The login screen has no chrome: base.gohtml already branches on IsLogged and
+  gives an anonymous visitor a bare <main>, with no sidebar, no topbar and no
+  user menu. LoginView redirects an authenticated session away, so this page is
+  only ever rendered on the anonymous branch.
+*/}}
+{{ define "content" }}
+  <div class="min-h-[80vh] flex items-center justify-center px-4">
+    {{ template "form/page" (dict
+        "Title"       (localize .Language "auth.login.title")
+        "Action"      "/auth/login"
+        "SubmitLabel" (localize .Language "auth.login.form.submit.value")
+        "Error"       ""
+        "Language"    .Language
+        "CSRFToken"   .CSRFToken
+        "Fields" (slice
+          (dict
+            "Type"        "text"
+            "Name"        "username"
+            "Label"       (localize .Language "auth.login.form.username.label")
+            "Placeholder" (localize .Language "auth.login.form.username.placeholder")
+            "Required"    true)
+          (dict
+            "Type"        "password"
+            "Name"        "password"
+            "Label"       (localize .Language "auth.login.form.password.label")
+            "Placeholder" (localize .Language "auth.login.form.password.placeholder")
+            "Required"    true)
+          (dict
+            "Type"  "checkbox"
+            "Name"  "remember_me"
+            "Label" (localize .Language "auth.login.form.remember_me.label")))) }}
+  </div>
+{{ end }}

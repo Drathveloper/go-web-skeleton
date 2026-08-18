@@ -43,8 +43,13 @@ func InitializeRoutes(container *wire.Container) (*gin.Engine, error) {
 		webRouter.Use(middleware.FlushSessionHandler())
 		webRouter.Use(middleware.LanguageHandler())
 
+		webRouter.GET("/", handler.HomeHandler())
+		webRouter.POST("/language", handler.SetLanguageHandler())
+
 		registerAuthenticationRoutes(webRouter, container)
 
+		registerItemCategoryRoutes(webRouter, container)
+		registerItemRoutes(webRouter, container)
 		// scaffold:routes:register
 	}
 	return router, nil

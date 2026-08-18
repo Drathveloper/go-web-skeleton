@@ -1,0 +1,25 @@
+{
+  "item": {
+    "title": "Artículos",
+    "subtitle": "Todo lo que el catálogo vende",
+    "actions": {
+      "new": "Nuevo artículo",
+      "edit": "Editar artículo"
+    },
+    "fields": {
+      "name": "Nombre",
+      "notes": "Notas",
+      "stock": "Existencias",
+      "price": "Precio",
+      "contact": "Email de contacto",
+      "released_at": "Fecha de lanzamiento",
+      "starts_at": "Comienza el",
+      "category_id": "Categoría",
+      "active": "Activo"
+    },
+    "active": {
+      "yes": "Activo",
+      "no": "Inactivo"
+    }
+  }
+}

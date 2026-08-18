@@ -1,0 +1,27 @@
+{{/*
+  table/header — page heading of a listing plus its primary action.
+
+  Takes a dto.TableView. Reads Title, Subtitle, NewURL, NewLabel, Language.
+  NewURL empty hides the button; it is fetched into #modal, never navigated to.
+*/}}
+{{ define "table/header" }}
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">{{ .Title }}</h1>
+      {{ if .Subtitle }}
+        <p class="text-fg-muted text-[13px] mt-1">{{ .Subtitle }}</p>
+      {{ end }}
+    </div>
+    {{ if .NewURL }}
+      <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" class="btn btn-primary"
+                hx-get="{{ .NewURL }}"
+                hx-target="#modal"
+                hx-swap="innerHTML">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          {{ if .NewLabel }}{{ .NewLabel }}{{ else }}{{ localize .Language "actions.new" }}{{ end }}
+        </button>
+      </div>
+    {{ end }}
+  </div>
+{{ end }}

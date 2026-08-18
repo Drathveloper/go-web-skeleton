@@ -1,0 +1,13 @@
+{
+  "item_category": {
+    "title": "Categorías de artículo",
+    "subtitle": "Grupos a los que pertenecen los artículos",
+    "actions": {
+      "new": "Nueva categoría",
+      "edit": "Editar categoría"
+    },
+    "fields": {
+      "name": "Nombre"
+    }
+  }
+}

@@ -30,6 +30,9 @@ const (
 	FieldTypePassword = "password"
 	// FieldTypeHidden renders <input type="hidden">, label and hint ignored.
 	FieldTypeHidden = "hidden"
+	// FieldTypeCheckboxGroup renders one checkbox per StringOptions entry, all
+	// sharing Name, so the form posts a []string.
+	FieldTypeCheckboxGroup = "checkboxgroup"
 )
 
 // FormView drives templates/files/components/form/modal.gohtml, the modal card
@@ -71,6 +74,9 @@ type FormField struct {
 	Error string
 	// Options feeds FieldTypeSelect and FieldTypeMultiSelect.
 	Options []SelectOption
+	// StringOptions feeds FieldTypeCheckboxGroup, whose members are bare
+	// values with no separate label — a role list, a set of flags.
+	StringOptions []string
 	// Selected holds the option values, stringified, that are selected.
 	Selected []string
 	// Rows is the textarea height. Zero falls back to the component default.

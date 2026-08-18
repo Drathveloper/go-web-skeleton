@@ -1,0 +1,8 @@
+{{/*
+  fragments/form/modal — the HTMX entry point for a create or update form,
+  rendered with a dto.FormView into #modal.
+
+  Answered with 200 to open the form and with 422, same template, Error set,
+  when validation fails. A generated module ships no form markup of its own.
+*/}}
+{{ template "form/modal" . }}

@@ -1,0 +1,10 @@
+{{/*
+  table/script — wires one table to the shared table helpers.
+
+  Sorting and the empty state row need to know which table they belong to, and
+  that is the only per-table javascript in the application. The helpers
+  themselves live in assets/js/table_utils.js.
+*/}}
+{{ define "table/script" }}
+  <script>initDataTable({{ printf "%s-table" .ID }});</script>
+{{ end }}

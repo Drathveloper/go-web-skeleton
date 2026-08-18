@@ -1,0 +1,9 @@
+{{/*
+  fragments/auth/row — the HTMX entry point for a single user row, rendered
+  with the handler's gin.H.
+
+  Create answers with OOB "afterbegin:#users-tbody", update with "true". The
+  row id stays user-row-<id> because that is what the delete and update targets
+  in the listing point at.
+*/}}
+{{ template "auth/user-row" . }}

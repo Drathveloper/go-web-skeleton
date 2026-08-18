@@ -1,0 +1,29 @@
+{{/*
+  auth/user-row — one user as a dto.TableRow shaped map handed to table/row.
+
+  Shared by pages/auth/list_users and fragments/auth/row so that the row the
+  listing draws and the row an out-of-band swap sends back are the same markup.
+
+  Takes (dict "User" <*dto.User|dto.User> "Language" "CSRFToken" "OOB"), which
+  is exactly the gin.H the handler already builds for the row fragment.
+
+  There is no delete button because there is no delete route: an administrator
+  locking themselves out of the only admin account is not a recoverable state.
+*/}}
+{{ define "auth/user-row" }}
+  {{- $user := .User }}
+  {{- $roles := "" }}
+  {{- range $user.Roles }}
+    {{- if $roles }}{{ $roles = printf "%s, %s" $roles . }}{{ else }}{{ $roles = . }}{{ end }}
+  {{- end }}
+  {{ template "table/row" (dict
+      "ID"        (printf "user-row-%d" $user.ID)
+      "EditURL"   (printf "/auth/user/%d/edit" $user.ID)
+      "Language"  .Language
+      "CSRFToken" .CSRFToken
+      "OOB"       .OOB
+      "Cells" (slice
+        (dict "Text" $user.Username "Secondary" (printf "#%d" $user.ID)
+              "Strong" true "SecondaryMono" true "Align" "")
+        (dict "Text" $roles "Badge" "brand" "Align" ""))) }}
+{{ end }}

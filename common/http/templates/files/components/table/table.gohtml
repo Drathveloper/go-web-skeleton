@@ -1,0 +1,26 @@
+{{/*
+  table — the whole listing, from a dto.TableView.
+
+  A generated list page is nothing but {{ template "table" .Data.Table }}: the
+  page owns the data, this file owns the markup. Hand written pages that need
+  cells the TableCell model cannot express compose "table/header",
+  "table/toolbar", "table/thead", "table/row" and "table/script" themselves.
+*/}}
+{{ define "table" }}
+  {{ template "table/header" . }}
+  <div class="card overflow-hidden">
+    {{ template "table/toolbar" . }}
+    <div class="overflow-x-auto">
+      <table id="{{ .ID }}-table" class="table">
+        {{ template "table/thead" . }}
+        <tbody id="{{ .ID }}-tbody">
+          {{ range .Rows }}
+            {{ template "table/row" . }}
+          {{ end }}
+          {{ template "table/empty-row" . }}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{ template "table/script" . }}
+{{ end }}

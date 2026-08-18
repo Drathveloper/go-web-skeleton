@@ -1,0 +1,29 @@
+{{/*
+  form/page — the same dto.FormView as form/modal, rendered as a standalone
+  page instead of a modal.
+
+  Every create and update screen has two entry points: the HTMX one that opens
+  a modal, and the plain URL a browser can be pointed at directly, which the
+  handlers answer when the HX-Request header is absent. This is the second one:
+  a real <form method="post">, no close buttons, no dependency on #modal.
+
+  Everything between the <form> tags is shared with form/modal through
+  form/body, so a change to a field, the error banner or the CSRF token cannot
+  make the two drift apart.
+*/}}
+{{ define "form/page" }}
+  <div class="card w-full max-w-lg mx-auto">
+    <div class="card-header">
+      <h2 class="card-title">{{ .Title }}</h2>
+    </div>
+
+    <form method="post" action="{{ .Action }}">
+      {{ template "form/body" . }}
+      <div class="card-footer">
+        <button type="submit" class="btn btn-primary w-full">
+          {{ if .SubmitLabel }}{{ .SubmitLabel }}{{ else }}{{ localize .Language "actions.save" }}{{ end }}
+        </button>
+      </div>
+    </form>
+  </div>
+{{ end }}

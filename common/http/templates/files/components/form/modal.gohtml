@@ -1,0 +1,38 @@
+{{/*
+  form/modal — the modal card every HTMX create and update form is made of,
+  from a dto.FormView (or any map carrying the same keys).
+
+  A generated form fragment is nothing but {{ template "form/modal" . }}: the
+  card, the close button, the error banner, the CSRF token and the footer are
+  the same in every module, so they live here and nowhere else.
+
+  On a validation failure the handler answers 422 with this same view, Error set
+  to a localized user safe message and the submitted values still in the fields.
+  The response replaces #modal, so the form comes back with the error inline.
+
+  form/page renders the same view as a full page for the non HTMX fallback; the
+  two share everything between the <form> tags through form/body.
+*/}}
+{{ define "form/modal" }}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">{{ .Title }}</h2>
+      <button type="button" class="btn btn-ghost btn-icon btn-sm" data-action="close-modal"
+              aria-label="{{ localize .Language "form.close" }}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form hx-post="{{ .Action }}" hx-target="#modal" hx-swap="innerHTML">
+      {{ template "form/body" . }}
+      <div class="card-footer">
+        <button type="button" class="btn btn-secondary" data-action="close-modal">
+          {{ localize .Language "actions.cancel" }}
+        </button>
+        <button type="submit" class="btn btn-primary">
+          {{ if .SubmitLabel }}{{ .SubmitLabel }}{{ else }}{{ localize .Language "actions.save" }}{{ end }}
+        </button>
+      </div>
+    </form>
+  </div>
+{{ end }}

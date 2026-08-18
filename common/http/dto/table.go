@@ -75,6 +75,10 @@ type TableCell struct {
 	Badge string
 	// Align is "", "right" or "center".
 	Align string
+	// Badges renders one badge per entry instead of one badge for the whole
+	// cell, for a value that is a set rather than a scalar — a user's roles,
+	// an item's tags. Takes precedence over Badge when non-empty.
+	Badges []string
 	// Mono renders Text with the tabular numeric font, for amounts and codes.
 	Mono bool
 	// SecondaryMono does the same for Secondary, as the id line does.

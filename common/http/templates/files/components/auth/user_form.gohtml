@@ -1,0 +1,73 @@
+{{/*
+  auth/user-form — the create and update user form, as a dto.FormView shaped
+  map handed to form/modal or form/page.
+
+  It lives in components rather than in the fragment because three templates
+  need the very same field list: fragments/auth/form for the HTMX modal, and
+  pages/auth/{create,update}_user for the plain URL fallback. Written in the
+  fragment it would have to be copied into both pages.
+
+  Takes (dict "Language" "CSRFToken" "Username" "UserID" "UserRoles"
+              "AllowedRoles" "IsEdit" "Error" "FullPage").
+
+  Username rather than the user itself: the fragment gets a *dto.User that may
+  be nil and the update page gets a dto.User value, and a template can test the
+  first for emptiness but not the second.
+
+  The i18n keys are composed from the create/update prefix instead of being
+  written twice behind an {{ if .IsEdit }}. The render tests assert on the
+  translated text, so a key that goes missing still fails a test.
+
+  The roles control is driven entirely by AllowedRoles: no role name is written
+  anywhere in this file, because `scaffold new --roles` rewrites the list.
+
+  Passwords are never echoed back into the form, not even after a 422.
+*/}}
+{{ define "auth/user-form" }}
+  {{- $lang := .Language }}
+  {{- $prefix := "auth.create_user" }}
+  {{- if .IsEdit }}{{ $prefix = "auth.update_user" }}{{ end }}
+  {{- $action := "/auth/user/new" }}
+  {{- if .IsEdit }}{{ $action = printf "/auth/user/%v/edit" .UserID }}{{ end }}
+  {{- $passwordHint := "" }}
+  {{- if .IsEdit }}{{ $passwordHint = localize $lang "auth.update_user.form.password.hint" }}{{ end }}
+  {{- $view := dict
+      "Title"       (localize $lang (printf "%s.title" $prefix))
+      "Action"      $action
+      "SubmitLabel" (localize $lang (printf "%s.form.submit.value" $prefix))
+      "Error"       .Error
+      "Language"    $lang
+      "CSRFToken"   .CSRFToken
+      "Fields" (slice
+        (dict
+          "Type"        "text"
+          "Name"        "username"
+          "Label"       (localize $lang (printf "%s.form.username.label" $prefix))
+          "Placeholder" (localize $lang (printf "%s.form.username.placeholder" $prefix))
+          "Value"       .Username
+          "Required"    true)
+        (dict
+          "Type"        "password"
+          "Name"        "password"
+          "Label"       (localize $lang (printf "%s.form.password.label" $prefix))
+          "Placeholder" (localize $lang (printf "%s.form.password.placeholder" $prefix))
+          "Hint"        $passwordHint
+          "Required"    (not .IsEdit))
+        (dict
+          "Type"        "password"
+          "Name"        "confirm_password"
+          "Label"       (localize $lang (printf "%s.form.confirm_password.label" $prefix))
+          "Placeholder" (localize $lang (printf "%s.form.confirm_password.placeholder" $prefix))
+          "Required"    (not .IsEdit))
+        (dict
+          "Type"     "checkboxgroup"
+          "Name"     "roles"
+          "Label"    (localize $lang (printf "%s.form.roles.label" $prefix))
+          "Options"  .AllowedRoles
+          "Selected" .UserRoles)) }}
+  {{- if .FullPage }}
+    {{ template "form/page" $view }}
+  {{- else }}
+    {{ template "form/modal" $view }}
+  {{- end }}
+{{ end }}

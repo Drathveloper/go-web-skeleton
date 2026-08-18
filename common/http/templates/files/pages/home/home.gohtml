@@ -1,0 +1,39 @@
+{{ define "title" }}{{ localize .Language "home.title" }}{{ end }}
+
+{{ define "content" }}
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">{{ localize .Language "home.heading" }}</h1>
+      <p class="text-fg-muted text-[13px] mt-1">{{ localize .Language "home.subtitle" }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">{{ localize .Language "home.cards.users.title" }}</h2>
+      </div>
+      <div class="card-body">
+        <p class="text-fg-muted text-[13px] leading-relaxed">{{ localize .Language "home.cards.users.text" }}</p>
+      </div>
+      <div class="card-footer">
+        <a href="/auth/user" class="btn btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M16 11a4 4 0 0 0 0-8"/></svg>
+          {{ localize .Language "home.cards.users.action" }}
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">{{ localize .Language "home.cards.scaffold.title" }}</h2>
+      </div>
+      <div class="card-body">
+        <p class="text-fg-muted text-[13px] leading-relaxed mb-3">{{ localize .Language "home.cards.scaffold.text" }}</p>
+        <pre class="text-xs font-mono bg-surface-sunken border border-border rounded-md p-3 overflow-x-auto"><code>go run ./cmd/scaffold module \
+  --context billing --name invoice --plural invoices \
+  --field number:string:required --field amount:money</code></pre>
+      </div>
+    </div>
+  </div>
+{{ end }}

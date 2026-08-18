@@ -1,0 +1,16 @@
+{{/*
+  table/empty-row — the "nothing here" row, from a dto.TableView.
+
+  It lives inside <tbody> rather than replacing it, so an out-of-band swap can
+  prepend a row without having to know whether the table was empty. Hiding it
+  once there is something to show is table_utils.js's job, on every swap.
+*/}}
+{{ define "table/empty-row" }}
+  <tr data-empty-row{{ if .Rows }} hidden{{ end }}>
+    <td colspan="{{ len .Columns }}">
+      <div class="text-center text-fg-subtle py-8">
+        {{ if .EmptyText }}{{ .EmptyText }}{{ else }}{{ localize .Language "table.no_results" }}{{ end }}
+      </div>
+    </td>
+  </tr>
+{{ end }}

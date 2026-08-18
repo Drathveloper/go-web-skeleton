@@ -1,0 +1,25 @@
+{
+  "item": {
+    "title": "Items",
+    "subtitle": "Everything the catalogue sells",
+    "actions": {
+      "new": "New item",
+      "edit": "Edit item"
+    },
+    "fields": {
+      "name": "Name",
+      "notes": "Notes",
+      "stock": "Stock",
+      "price": "Price",
+      "contact": "Contact email",
+      "released_at": "Released at",
+      "starts_at": "Starts at",
+      "category_id": "Category",
+      "active": "Active"
+    },
+    "active": {
+      "yes": "Active",
+      "no": "Inactive"
+    }
+  }
+}

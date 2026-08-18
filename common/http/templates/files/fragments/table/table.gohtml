@@ -1,0 +1,9 @@
+{{/*
+  fragments/table/table — a whole listing on its own, rendered with a
+  dto.TableView.
+
+  For refreshing the table after a change that touches more than one row, where
+  swapping the rows one by one would be a race. The page renders the same
+  component, so the two cannot drift.
+*/}}
+{{ template "table" . }}

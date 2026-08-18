@@ -1,0 +1,22 @@
+{{/*
+  table/row — one <tr>, from a dto.TableRow.
+
+  The same template renders the row inside a full listing and on its own after
+  an HTMX create or update, which is what keeps the two from drifting apart.
+  OOB decides which: "" inside the listing, "true" to replace the row in place
+  after an update, "afterbegin:#<plural>-tbody" to prepend it after a create.
+  The prepend form has to be wrapped in a <tbody> because a bare <tr> is not a
+  valid out-of-band target.
+*/}}
+{{ define "table/row" }}
+  {{- if and .OOB (ne .OOB "true") }}<tbody hx-swap-oob="{{ .OOB }}">{{ end }}
+  <tr id="{{ .ID }}"{{ if eq .OOB "true" }} hx-swap-oob="true"{{ end }}>
+    {{- range .Cells }}
+      {{ template "table/cell" . }}
+    {{- end }}
+    {{- if or .EditURL .DeleteURL }}
+      <td class="text-right">{{ template "table/actions" . }}</td>
+    {{- end }}
+  </tr>
+  {{- if and .OOB (ne .OOB "true") }}</tbody>{{ end }}
+{{ end }}

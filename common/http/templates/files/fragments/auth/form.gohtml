@@ -1,0 +1,19 @@
+{{/*
+  fragments/auth/form — the HTMX entry point for the create and update user
+  form, rendered into #modal with the handler's gin.H.
+
+  Answered with 200 to open the form and with 422, same template, Error already
+  localized, when validation fails. User is a *dto.User that is nil on create.
+*/}}
+{{- $username := "" }}
+{{- $userID := 0 }}
+{{- if .User }}{{ $username = .User.Username }}{{ $userID = .User.ID }}{{ end }}
+{{ template "auth/user-form" (dict
+    "Language"     .Language
+    "CSRFToken"    .CSRFToken
+    "Username"     $username
+    "UserID"       $userID
+    "UserRoles"    .UserRoles
+    "AllowedRoles" .AllowedRoles
+    "IsEdit"       .IsEdit
+    "Error"        .Error) }}

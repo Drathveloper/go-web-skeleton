@@ -1,0 +1,23 @@
+{{/*
+  form/body — everything between the <form> tags: the error banner, the fields
+  and the CSRF token. Shared by form/modal and form/page.
+
+  Error is already localized text and is rendered as is. It is never an
+  err.Error(): the detail goes to the log, this string goes to the user.
+*/}}
+{{ define "form/body" }}
+  <div class="card-body space-y-4">
+    {{ if .Error }}
+      <div class="alert alert-danger" role="alert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="flex-1">{{ .Error }}</div>
+      </div>
+    {{ end }}
+
+    {{ range .Fields }}
+      {{ template "form/input" (dict "Field" . "Language" $.Language) }}
+    {{ end }}
+
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+  </div>
+{{ end }}

@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -38,6 +39,9 @@ func Run(fileSystem fs.FS, buildInfo *model.BuildInfo) error {
 	slog.Info("loaded env config", slog.String("env", config.Env.String()))
 	slog.Info("initializing database migration")
 	if err = runDatabaseMigrations(container); err != nil {
+		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, runBaseErrMsg, err)
+	}
+	if err = seedAdministrator(context.Background(), container); err != nil {
 		return fmt.Errorf(constants.DefaultWrappedErrorTemplate, runBaseErrMsg, err)
 	}
 	httpSigChan := make(chan os.Signal, 1)

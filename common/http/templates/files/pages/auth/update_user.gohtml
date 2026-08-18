@@ -1,0 +1,17 @@
+{{ define "title" }}{{ localize .Language "auth.update_user.title" }}{{ end }}
+
+{{/*
+  The non HTMX fallback for /auth/user/:id/edit.
+*/}}
+{{ define "content" }}
+  {{ template "auth/user-form" (dict
+      "Language"     .Language
+      "CSRFToken"    .CSRFToken
+      "Username"     .Data.User.Username
+      "UserID"       .Data.User.ID
+      "UserRoles"    .Data.User.Roles
+      "AllowedRoles" .Data.AllowedRoles
+      "IsEdit"       true
+      "Error"        ""
+      "FullPage"     true) }}
+{{ end }}

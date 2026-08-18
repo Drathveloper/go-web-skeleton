@@ -86,13 +86,13 @@ func (ctrl *Authentication) LoginProcess() gin.HandlerFunc {
 	return func(c *gin.Context) { //nolint:varnamelen
 		session := helper.MustGetSession(c)
 		if err := c.Request.ParseForm(); err != nil {
-			flashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, invalidFormDataMessageID, err)
+			helper.FlashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, helper.InvalidFormDataMessageID, err)
 			c.Redirect(http.StatusFound, loginPath)
 			return
 		}
 		login, err := mapper.FormLoginToDomainLogin(c.Request.Form)
 		if err != nil {
-			flashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, invalidFormDataMessageID, err)
+			helper.FlashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, helper.InvalidFormDataMessageID, err)
 			c.Redirect(http.StatusFound, loginPath)
 			return
 		}
@@ -101,7 +101,7 @@ func (ctrl *Authentication) LoginProcess() gin.HandlerFunc {
 			// An unknown user and a wrong password answer exactly the same thing:
 			// telling them apart turns the login form into a user enumeration oracle.
 			ctrl.eventPublisher.Publish(&dto.LoginEvent{Username: login.Username, IsSuccess: false})
-			flashError(c, session, http.StatusUnauthorized, loginErrMsg, invalidCredentialsMessageID, err)
+			helper.FlashError(c, session, http.StatusUnauthorized, loginErrMsg, invalidCredentialsMessageID, err)
 			c.Redirect(http.StatusFound, loginPath)
 			return
 		}
@@ -112,7 +112,9 @@ func (ctrl *Authentication) LoginProcess() gin.HandlerFunc {
 		userSession, err := ctrl.sessionService.CreateUserSession(
 			c.Request.Context(), session.ID, sessionID, user)
 		if err != nil {
-			flashError(c, session, http.StatusInternalServerError, createSessionErrMsg, unexpectedErrorMessageID, err)
+			helper.FlashError(
+				c, session, http.StatusInternalServerError,
+				createSessionErrMsg, helper.UnexpectedErrorMessageID, err)
 			c.Redirect(http.StatusFound, loginPath)
 			return
 		}
@@ -135,7 +137,7 @@ func (ctrl *Authentication) LogoutProcess() gin.HandlerFunc {
 	return func(c *gin.Context) { //nolint:varnamelen
 		session := helper.MustGetSession(c)
 		if err := ctrl.sessionService.DestroySession(c.Request.Context(), session); err != nil {
-			flashError(c, session, http.StatusInternalServerError, logoutErrMsg, unexpectedErrorMessageID, err)
+			helper.FlashError(c, session, http.StatusInternalServerError, logoutErrMsg, helper.UnexpectedErrorMessageID, err)
 			c.Redirect(http.StatusFound, constants.HomePath)
 			return
 		}

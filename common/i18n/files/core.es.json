@@ -114,7 +114,8 @@
         },
         "password": {
           "label": "Contraseña",
-          "placeholder": "contraseña"
+          "placeholder": "contraseña",
+          "hint": "Déjalo en blanco para mantener la contraseña actual."
         },
         "confirm_password": {
           "label": "Confirmar contraseña",

@@ -1,0 +1,19 @@
+{{/*
+  table/toolbar — the search row that sits at the top of the table card.
+
+  Takes a dto.TableView. Reads ID, SearchPlaceholder, Language. Filtering is
+  client side over the rows already in the DOM (assets/js/table_utils.js).
+*/}}
+{{ define "table/toolbar" }}
+  <div class="table-toolbar">
+    <div class="input-group flex-1 min-w-[180px] max-w-xs">
+      <span class="input-icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      </span>
+      <input type="text" id="{{ .ID }}-table-search" class="input"
+             aria-label="{{ localize .Language "actions.search" }}"
+             placeholder="{{ if .SearchPlaceholder }}{{ .SearchPlaceholder }}{{ else }}{{ localize .Language "table.search_text" }}{{ end }}"
+             oninput="filterTable('{{ .ID }}-table', this.value)">
+    </div>
+  </div>
+{{ end }}

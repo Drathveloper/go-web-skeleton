@@ -1,0 +1,114 @@
+{{/*
+  form/input — one labelled control, from (dict "Field" <dto.FormField>
+  "Language" <string>).
+
+  One template with a type switch rather than one template per field type: the
+  eight generator field types map onto four controls (input, textarea, checkbox,
+  select) and differ only in the type attribute and the binding behind it.
+
+    text        string            <input type="text">
+    textarea    text              <textarea>
+    number      int, uint         <input type="number">
+    checkbox    bool              <input type="checkbox" value="true">
+    date        date              <input type="date">
+    datetime    datetime          <input type="datetime-local">
+    money       money             <input type="text" inputmode="decimal">, decimal2
+    email       email             <input type="email">
+    select      ref=<entity>      <select> fed by the entity lookups
+    multiselect ref list          <select multiple>
+    password, hidden              auth forms
+
+  checkboxgroup is the odd one out: it delegates to form/checkbox-group, whose
+  Options are plain strings rather than dto.SelectOption, because its one use so
+  far is the roles control and the roles arrive as a []string from
+  commondomain.GetAllowedRoles(). A dto.FormField cannot express that today, so
+  the field has to be built as a map; give dto.FormField a StringOptions the day
+  a generated module needs one.
+
+  Value, Checked and Selected are what comes back after a failed submit, so a
+  422 never makes the user retype the form.
+*/}}
+{{ define "form/input" }}
+  {{- $f := .Field }}
+  {{- $lang := .Language }}
+  {{- if eq $f.Type "hidden" }}
+    <input type="hidden" name="{{ $f.Name }}" value="{{ $f.Value }}">
+  {{- else if eq $f.Type "checkboxgroup" }}
+    {{ template "form/checkbox-group" (dict
+        "Name" $f.Name "Label" $f.Label "Options" $f.Options "Selected" $f.Selected
+        "Required" $f.Required "Hint" $f.Hint "Error" $f.Error "Language" $lang) }}
+  {{- else if eq $f.Type "checkbox" }}
+    {{- /* Value carries the string the box posts when ticked, and only a group
+           member needs one: a lone boolean posts "true". A group member also
+           takes its value into the id, or every box in the group would answer
+           to the same label. */}}
+    {{- $value := "true" }}{{ if $f.Value }}{{ $value = $f.Value }}{{ end }}
+    {{- $id := $f.Name }}{{ if $f.Value }}{{ $id = printf "%s-%s" $f.Name $f.Value }}{{ end }}
+    <div>
+      <label class="flex items-center gap-2 cursor-pointer p-1 rounded-md" for="{{ $id }}">
+        <input id="{{ $id }}" type="checkbox" name="{{ $f.Name }}" value="{{ $value }}" class="check"
+               {{- if $f.Checked }} checked{{ end }}{{ if $f.Disabled }} disabled{{ end }}>
+        <span class="text-[13px]">{{ $f.Label }}</span>
+      </label>
+      {{ template "form/field-note" $f }}
+    </div>
+  {{- else }}
+    <div>
+      <label class="form-label{{ if $f.Required }} req{{ end }}" for="{{ $f.Name }}">{{ $f.Label }}</label>
+      {{- if eq $f.Type "textarea" }}
+        <textarea id="{{ $f.Name }}" name="{{ $f.Name }}" class="textarea"
+                  rows="{{ if $f.Rows }}{{ $f.Rows }}{{ else }}4{{ end }}"
+                  placeholder="{{ $f.Placeholder }}"
+                  {{- if $f.Error }} aria-invalid="true"{{ end }}{{ if $f.Disabled }} disabled{{ end }}>{{ $f.Value }}</textarea>
+      {{- else if eq $f.Type "multiselect" }}
+        <select id="{{ $f.Name }}" name="{{ $f.Name }}" class="select" multiple
+                size="{{ if $f.Rows }}{{ $f.Rows }}{{ else }}5{{ end }}" style="height:auto;"
+                {{- if $f.Error }} aria-invalid="true"{{ end }}{{ if $f.Disabled }} disabled{{ end }}>
+          {{- range $f.Options }}
+            {{- $value := printf "%v" .Value }}
+            <option value="{{ $value }}"{{ if contains $f.Selected $value }} selected{{ end }}>{{ .Label }}</option>
+          {{- end }}
+        </select>
+        {{- if not $f.Hint }}<p class="form-hint">{{ localize $lang "form.multiselect_hint" }}</p>{{ end }}
+      {{- else if eq $f.Type "select" }}
+        <div class="select-wrap">
+          <select id="{{ $f.Name }}" name="{{ $f.Name }}" class="select"
+                  {{- if $f.Error }} aria-invalid="true"{{ end }}{{ if $f.Disabled }} disabled{{ end }}>
+            <option value="" disabled{{ if not $f.Selected }} selected{{ end }}>
+              {{- if $f.Placeholder }}{{ $f.Placeholder }}{{ else }}{{ localize $lang "form.select_placeholder" }}{{ end -}}
+            </option>
+            {{- range $f.Options }}
+              {{- $value := printf "%v" .Value }}
+              <option value="{{ $value }}"{{ if contains $f.Selected $value }} selected{{ end }}>{{ .Label }}</option>
+            {{- end }}
+          </select>
+        </div>
+      {{- else }}
+        {{- $type := "text" }}
+        {{- if eq $f.Type "number" }}{{ $type = "number" }}{{ end }}
+        {{- if eq $f.Type "date" }}{{ $type = "date" }}{{ end }}
+        {{- if eq $f.Type "datetime" }}{{ $type = "datetime-local" }}{{ end }}
+        {{- if eq $f.Type "email" }}{{ $type = "email" }}{{ end }}
+        {{- if eq $f.Type "password" }}{{ $type = "password" }}{{ end }}
+        <input id="{{ $f.Name }}" name="{{ $f.Name }}" class="input" type="{{ $type }}"
+               value="{{ $f.Value }}" placeholder="{{ $f.Placeholder }}"
+               {{- if eq $f.Type "money" }} inputmode="decimal"{{ end }}
+               {{- if $f.Required }} required{{ end }}
+               {{- if $f.Error }} aria-invalid="true"{{ end }}{{ if $f.Disabled }} disabled{{ end }}>
+      {{- end }}
+      {{ template "form/field-note" $f }}
+    </div>
+  {{- end }}
+{{ end }}
+
+{{/*
+  form/field-note — the error or the hint under a control, from a dto.FormField.
+  The error wins: a hint next to a rejected value is noise.
+*/}}
+{{ define "form/field-note" }}
+  {{- if .Error }}
+    <p class="form-error">{{ .Error }}</p>
+  {{- else if .Hint }}
+    <p class="form-hint">{{ .Hint }}</p>
+  {{- end }}
+{{ end }}

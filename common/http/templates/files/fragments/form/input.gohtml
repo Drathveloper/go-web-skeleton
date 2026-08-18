@@ -1,0 +1,8 @@
+{{/*
+  fragments/form/input — a single control on its own, rendered with
+  (dict "Field" <dto.FormField> "Language" <string>).
+
+  For per field revalidation over HTMX, where re-rendering the whole modal would
+  lose the caret.
+*/}}
+{{ template "form/input" . }}

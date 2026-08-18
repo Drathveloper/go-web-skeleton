@@ -101,7 +101,9 @@ func (ctrl *UserManagement) ListUsersView() gin.HandlerFunc {
 		pagination := commonmapper.MapDTOPaginationToDomainPagination(&queryPagination)
 		users, err := ctrl.service.ListUsers(c.Request.Context(), pagination)
 		if err != nil {
-			renderErrorPage(c, session, http.StatusInternalServerError, listUsersErrMsg, unexpectedErrorMessageID, err)
+			helper.RenderErrorPage(
+				c, session, http.StatusInternalServerError,
+				listUsersErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		response := mapper.DomainUsersToUsersViewResponse(users, session)
@@ -128,29 +130,29 @@ func (ctrl *UserManagement) CreateUserProcess() gin.HandlerFunc {
 		var request dto.CreateUserProcessRequest
 		htmx := helper.IsHTMXRequest(c)
 		if err := c.ShouldBind(&request); err != nil {
-			logError(c, invalidFormDataErrMsg, err)
+			helper.LogError(c, invalidFormDataErrMsg, err)
 			if htmx {
 				partial := &dto.User{Username: request.Username, Roles: request.Roles}
 				c.HTML(http.StatusUnprocessableEntity, userFormFragment,
 					userFormData(session, partial, commondomain.GetAllowedRoles(), false,
-						localizedMessage(session, invalidFormDataMessageID)))
+						helper.LocalizedMessage(session, helper.InvalidFormDataMessageID)))
 				return
 			}
-			flashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, invalidFormDataMessageID, err)
+			helper.FlashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, helper.InvalidFormDataMessageID, err)
 			c.Redirect(http.StatusFound, userNewPath)
 			return
 		}
 		user := mapper.DTOCreateUserProcessRequestToDomainUser(&request)
 		if err := ctrl.service.CreateUser(c.Request.Context(), user); err != nil {
 			if htmx {
-				logError(c, createUserErrMsg, err)
+				helper.LogError(c, createUserErrMsg, err)
 				partial := &dto.User{Username: request.Username, Roles: request.Roles}
 				c.HTML(http.StatusUnprocessableEntity, userFormFragment,
 					userFormData(session, partial, commondomain.GetAllowedRoles(), false,
-						localizedMessage(session, unexpectedErrorMessageID)))
+						helper.LocalizedMessage(session, helper.UnexpectedErrorMessageID)))
 				return
 			}
-			flashError(c, session, http.StatusInternalServerError, createUserErrMsg, unexpectedErrorMessageID, err)
+			helper.FlashError(c, session, http.StatusInternalServerError, createUserErrMsg, helper.UnexpectedErrorMessageID, err)
 			c.Redirect(http.StatusFound, userNewPath)
 			return
 		}
@@ -161,7 +163,7 @@ func (ctrl *UserManagement) CreateUserProcess() gin.HandlerFunc {
 			return
 		}
 		session.AddAlertMessages(
-			commondomain.NewSuccessAlertMessage(localizedMessage(session, userCreatedMessageID), ""))
+			commondomain.NewSuccessAlertMessage(helper.LocalizedMessage(session, userCreatedMessageID), ""))
 		c.Redirect(http.StatusFound, userListPath)
 	}
 }
@@ -171,7 +173,9 @@ func (ctrl *UserManagement) UpdateUserView() gin.HandlerFunc {
 		session := helper.MustGetSession(c)
 		userID, err := strconv.ParseUint(c.Param("id"), userIDBase, userIDBitSize)
 		if err != nil {
-			renderErrorPage(c, session, http.StatusBadRequest, invalidFormDataErrMsg, invalidFormDataMessageID, err)
+			helper.RenderErrorPage(
+				c, session, http.StatusBadRequest,
+				invalidFormDataErrMsg, helper.InvalidFormDataMessageID, err)
 			return
 		}
 		user, err := ctrl.service.GetUserByID(c.Request.Context(), uint(userID))
@@ -180,10 +184,12 @@ func (ctrl *UserManagement) UpdateUserView() gin.HandlerFunc {
 			// sentinel lives in security/domain precisely so this layer can
 			// tell the two apart without importing the service package.
 			if errors.Is(err, domain.ErrUserNotFound) {
-				renderErrorPage(c, session, http.StatusNotFound, getUserErrMsg, notFoundErrorMessageID, err)
+				helper.RenderErrorPage(c, session, http.StatusNotFound, getUserErrMsg, helper.NotFoundErrorMessageID, err)
 				return
 			}
-			renderErrorPage(c, session, http.StatusInternalServerError, getUserErrMsg, unexpectedErrorMessageID, err)
+			helper.RenderErrorPage(
+				c, session, http.StatusInternalServerError,
+				getUserErrMsg, helper.UnexpectedErrorMessageID, err)
 			return
 		}
 		if helper.IsHTMXRequest(c) {
@@ -202,42 +208,42 @@ func (ctrl *UserManagement) UpdateUserProcess() gin.HandlerFunc {
 		htmx := helper.IsHTMXRequest(c)
 		userID, err := strconv.ParseUint(c.Param("id"), userIDBase, userIDBitSize)
 		if err != nil {
-			logError(c, invalidFormDataErrMsg, err)
+			helper.LogError(c, invalidFormDataErrMsg, err)
 			if htmx {
 				c.HTML(http.StatusBadRequest, userFormFragment,
 					userFormData(session, nil, commondomain.GetAllowedRoles(), true,
-						localizedMessage(session, invalidFormDataMessageID)))
+						helper.LocalizedMessage(session, helper.InvalidFormDataMessageID)))
 				return
 			}
-			flashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, invalidFormDataMessageID, err)
+			helper.FlashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, helper.InvalidFormDataMessageID, err)
 			c.Redirect(http.StatusFound, userListPath)
 			return
 		}
 		var request dto.UpdateUserProcessRequest
 		if err = c.ShouldBind(&request); err != nil {
-			logError(c, invalidFormDataErrMsg, err)
+			helper.LogError(c, invalidFormDataErrMsg, err)
 			if htmx {
 				partial := &dto.User{ID: uint(userID), Username: request.Username, Roles: request.Roles}
 				c.HTML(http.StatusUnprocessableEntity, userFormFragment,
 					userFormData(session, partial, commondomain.GetAllowedRoles(), true,
-						localizedMessage(session, invalidFormDataMessageID)))
+						helper.LocalizedMessage(session, helper.InvalidFormDataMessageID)))
 				return
 			}
-			flashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, invalidFormDataMessageID, err)
+			helper.FlashError(c, session, http.StatusBadRequest, invalidFormDataErrMsg, helper.InvalidFormDataMessageID, err)
 			c.Redirect(http.StatusFound, userEditPath(c.Param("id")))
 			return
 		}
 		user := mapper.DTOUpdateUserProcessRequestToDomainUser(uint(userID), &request)
 		if err = ctrl.service.UpdateUser(c.Request.Context(), user); err != nil {
 			if htmx {
-				logError(c, updateUserErrMsg, err)
+				helper.LogError(c, updateUserErrMsg, err)
 				partial := &dto.User{ID: uint(userID), Username: request.Username, Roles: request.Roles}
 				c.HTML(http.StatusUnprocessableEntity, userFormFragment,
 					userFormData(session, partial, commondomain.GetAllowedRoles(), true,
-						localizedMessage(session, unexpectedErrorMessageID)))
+						helper.LocalizedMessage(session, helper.UnexpectedErrorMessageID)))
 				return
 			}
-			flashError(c, session, http.StatusInternalServerError, updateUserErrMsg, unexpectedErrorMessageID, err)
+			helper.FlashError(c, session, http.StatusInternalServerError, updateUserErrMsg, helper.UnexpectedErrorMessageID, err)
 			c.Redirect(http.StatusFound, userEditPath(c.Param("id")))
 			return
 		}
@@ -248,7 +254,7 @@ func (ctrl *UserManagement) UpdateUserProcess() gin.HandlerFunc {
 			return
 		}
 		session.AddAlertMessages(
-			commondomain.NewSuccessAlertMessage(localizedMessage(session, userUpdatedMessageID), ""))
+			commondomain.NewSuccessAlertMessage(helper.LocalizedMessage(session, userUpdatedMessageID), ""))
 		c.Redirect(http.StatusFound, userListPath)
 	}
 }

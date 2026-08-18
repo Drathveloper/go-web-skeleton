@@ -1,0 +1,41 @@
+{{ define "title" }}{{ localize .Language "auth.list_users.title" }}{{ end }}
+
+{{/*
+  This listing composes the table sub components instead of calling "table"
+  wholesale: "table" ranges a prebuilt Rows list, and the handler hands over
+  []dto.User, which a template cannot map into rows. Everything visible still
+  comes from the components; what is written here is only the frame.
+*/}}
+{{ define "content" }}
+  {{- $view := dict
+      "ID"                "users"
+      "Title"             (localize .Language "auth.list_users.table.title")
+      "Subtitle"          (localize .Language "auth.list_users.table.subtitle")
+      "SearchPlaceholder" (localize .Language "auth.list_users.table.search_text")
+      "NewURL"            "/auth/user/new"
+      "NewLabel"          (localize .Language "auth.list_users.table.label")
+      "EmptyText"         (localize .Language "auth.list_users.table.no_results")
+      "Language"          .Language
+      "Rows"              .Data.Users
+      "Columns" (slice
+        (dict "Label" (localize .Language "auth.list_users.table.headers.users")   "SortKey" "username" "Align" "")
+        (dict "Label" (localize .Language "auth.list_users.table.headers.roles")   "SortKey" "roles"    "Align" "")
+        (dict "Label" (localize .Language "auth.list_users.table.headers.actions") "SortKey" ""         "Align" "right")) }}
+
+  {{ template "table/header" $view }}
+  <div class="card overflow-hidden">
+    {{ template "table/toolbar" $view }}
+    <div class="overflow-x-auto">
+      <table id="{{ $view.ID }}-table" class="table">
+        {{ template "table/thead" $view }}
+        <tbody id="{{ $view.ID }}-tbody">
+          {{ range .Data.Users }}
+            {{ template "auth/user-row" (dict "User" . "Language" $.Language "CSRFToken" $.CSRFToken "OOB" "") }}
+          {{ end }}
+          {{ template "table/empty-row" $view }}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{ template "table/script" $view }}
+{{ end }}

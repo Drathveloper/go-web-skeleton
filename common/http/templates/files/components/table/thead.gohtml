@@ -1,0 +1,25 @@
+{{/*
+  table/thead — the header row.
+
+  Takes a dto.TableView, reads Columns. A column with a SortKey becomes a
+  client side sort control; the actions column is a normal column with
+  Align "right" and the localized actions.* label.
+*/}}
+{{ define "table/thead" }}
+  <thead>
+    <tr>
+      {{ range .Columns }}
+        <th{{ if eq .Align "right" }} class="text-right"{{ else if eq .Align "center" }} class="text-center"{{ end }}>
+          {{ if .SortKey }}
+            <button type="button" class="th-sort" data-sort-key="{{ .SortKey }}">
+              {{ .Label }}
+              <svg class="arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+            </button>
+          {{ else }}
+            {{ .Label }}
+          {{ end }}
+        </th>
+      {{ end }}
+    </tr>
+  </thead>
+{{ end }}

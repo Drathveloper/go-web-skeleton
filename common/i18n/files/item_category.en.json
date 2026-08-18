@@ -1,0 +1,13 @@
+{
+  "item_category": {
+    "title": "Item categories",
+    "subtitle": "Groups the items belong to",
+    "actions": {
+      "new": "New category",
+      "edit": "Edit category"
+    },
+    "fields": {
+      "name": "Name"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{{/*
+  table/cell — one <td>, from a dto.TableCell.
+
+  Covers the four shapes the listings actually use: plain text, emphasised text
+  with a muted second line, a badge, and a right aligned monospaced number.
+  There is no raw HTML escape hatch on purpose: these values come from generated
+  mappers.
+*/}}
+{{ define "table/cell" }}
+  {{- $class := "" }}
+  {{- if eq .Align "right" }}{{ $class = "text-right" }}{{ else if eq .Align "center" }}{{ $class = "text-center" }}{{ end }}
+  {{- if .Mono }}{{ $class = printf "%s num" $class }}{{ end }}
+  <td{{ if $class }} class="{{ $class }}"{{ end }}>
+    {{- if .Badge }}
+      {{ if .Text }}<span class="badge badge-{{ .Badge }}">{{ .Text }}</span>{{ else }}&mdash;{{ end }}
+    {{- else if .Strong }}
+      <div class="font-medium">{{ if .Text }}{{ .Text }}{{ else }}&mdash;{{ end }}</div>
+    {{- else }}
+      {{ if .Text }}{{ .Text }}{{ else }}&mdash;{{ end }}
+    {{- end }}
+    {{- if .Secondary }}
+      <div class="text-xs text-fg-subtle{{ if .SecondaryMono }} font-mono{{ end }}">{{ .Secondary }}</div>
+    {{- end }}
+  </td>
+{{ end }}

@@ -1,0 +1,35 @@
+{{/*
+  form/checkbox-group — a set of checkboxes sharing one name, so the form posts
+  a repeated field that binds to a []string.
+
+  Takes (dict "Name" <string> "Label" <string> "Options" <[]string>
+              "Selected" <[]string> "Language" <string>
+              "Required" <bool> "Hint" <string> "Error" <string>).
+
+  Options is a list of plain strings whose value and label are the same thing.
+  That is what the roles control needs: the roles come from
+  commondomain.GetAllowedRoles() and are rewritten wholesale by
+  `scaffold new --roles`, so no template may name one.
+
+  Each box is a form/input checkbox with an explicit Value, which is what makes
+  them a group rather than N independent booleans.
+*/}}
+{{ define "form/checkbox-group" }}
+  <div>
+    <span class="form-label{{ if .Required }} req{{ end }}">{{ .Label }}</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {{- $selected := .Selected }}
+      {{- $name := .Name }}
+      {{- $lang := .Language }}
+      {{- range .Options }}
+        {{ template "form/input" (dict "Language" $lang "Field" (dict
+            "Type" "checkbox"
+            "Name" $name
+            "Label" .
+            "Value" .
+            "Checked" (contains $selected .))) }}
+      {{- end }}
+    </div>
+    {{ template "form/field-note" . }}
+  </div>
+{{ end }}
