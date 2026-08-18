@@ -17,7 +17,8 @@ type RequiredHTTPHandlers struct {
 func injectHTTPHandlers(container *Container) error {
 	container.AuthenticationHandler = securityhandler.NewAuthentication(
 		container.AuthenticationService, container.SessionService, container.Store, container.EventBus)
-	container.UserManagementHandler = securityhandler.NewUserManagement(container.UserManagementService)
+	container.UserManagementHandler = securityhandler.NewUserManagement(
+		container.UserManagementService, container.EventBus)
 	container.ItemCategoryHandler = examplehandler.NewItemCategory(container.ItemCategoryService)
 	container.ItemHandler = examplehandler.NewItem(container.ItemService, container.ItemCategoryService)
 	// scaffold:handlers:init

@@ -2,20 +2,20 @@ package dto
 
 import "log/slog"
 
-// LoginEventName is the topic the login event is published on. Subscribers in
+// LogoutEventName is the topic the logout event is published on. Subscribers in
 // common/event/routes reference this constant instead of the bare string.
-const LoginEventName = "login"
+const LogoutEventName = "logout"
 
-type LoginEvent struct {
+type LogoutEvent struct {
 	Username  string
 	IsSuccess bool
 }
 
-func (e LoginEvent) GetName() string {
-	return LoginEventName
+func (e LogoutEvent) GetName() string {
+	return LogoutEventName
 }
 
-func (e LoginEvent) LogAttrs() []slog.Attr {
+func (e LogoutEvent) LogAttrs() []slog.Attr {
 	return []slog.Attr{
 		slog.String("username", e.Username),
 		slog.Bool("is_success", e.IsSuccess),

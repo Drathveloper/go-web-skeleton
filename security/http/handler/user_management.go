@@ -13,6 +13,7 @@ import (
 	"github.com/Drathveloper/go-web-skeleton/common/http/helper"
 	commonmapper "github.com/Drathveloper/go-web-skeleton/common/http/mapper"
 	"github.com/Drathveloper/go-web-skeleton/security/domain"
+	eventdto "github.com/Drathveloper/go-web-skeleton/security/event/dto"
 	"github.com/Drathveloper/go-web-skeleton/security/http/dto"
 	"github.com/Drathveloper/go-web-skeleton/security/http/mapper"
 )
@@ -53,12 +54,34 @@ type UserManagementService interface {
 }
 
 type UserManagement struct {
-	service UserManagementService
+	service        UserManagementService
+	eventPublisher EventPublisher
 }
 
-func NewUserManagement(service UserManagementService) *UserManagement {
+func NewUserManagement(service UserManagementService, eventPublisher EventPublisher) *UserManagement {
 	return &UserManagement{
-		service: service,
+		service:        service,
+		eventPublisher: eventPublisher,
+	}
+}
+
+func newUserCreatedEvent(actor string, request *dto.CreateUserProcessRequest, isSuccess bool) *eventdto.UserCreatedEvent {
+	return &eventdto.UserCreatedEvent{
+		ActorUsername: actor,
+		Username:      request.Username,
+		Roles:         request.Roles,
+		IsSuccess:     isSuccess,
+	}
+}
+
+func newUserUpdatedEvent(
+	actor string, userID uint, request *dto.UpdateUserProcessRequest, isSuccess bool) *eventdto.UserUpdatedEvent {
+	return &eventdto.UserUpdatedEvent{
+		ActorUsername: actor,
+		Username:      request.Username,
+		Roles:         request.Roles,
+		UserID:        userID,
+		IsSuccess:     isSuccess,
 	}
 }
 
@@ -144,6 +167,7 @@ func (ctrl *UserManagement) CreateUserProcess() gin.HandlerFunc {
 		}
 		user := mapper.DTOCreateUserProcessRequestToDomainUser(&request)
 		if err := ctrl.service.CreateUser(c.Request.Context(), user); err != nil {
+			ctrl.eventPublisher.Publish(newUserCreatedEvent(session.Username, &request, false))
 			if htmx {
 				helper.LogError(c, createUserErrMsg, err)
 				partial := &dto.User{Username: request.Username, Roles: request.Roles}
@@ -156,6 +180,7 @@ func (ctrl *UserManagement) CreateUserProcess() gin.HandlerFunc {
 			c.Redirect(http.StatusFound, userNewPath)
 			return
 		}
+		ctrl.eventPublisher.Publish(newUserCreatedEvent(session.Username, &request, true))
 		if htmx {
 			helper.TriggerCloseModal(c)
 			c.HTML(http.StatusOK, userRowFragment,
@@ -235,6 +260,7 @@ func (ctrl *UserManagement) UpdateUserProcess() gin.HandlerFunc {
 		}
 		user := mapper.DTOUpdateUserProcessRequestToDomainUser(uint(userID), &request)
 		if err = ctrl.service.UpdateUser(c.Request.Context(), user); err != nil {
+			ctrl.eventPublisher.Publish(newUserUpdatedEvent(session.Username, uint(userID), &request, false))
 			if htmx {
 				helper.LogError(c, updateUserErrMsg, err)
 				partial := &dto.User{ID: uint(userID), Username: request.Username, Roles: request.Roles}
@@ -247,6 +273,7 @@ func (ctrl *UserManagement) UpdateUserProcess() gin.HandlerFunc {
 			c.Redirect(http.StatusFound, userEditPath(c.Param("id")))
 			return
 		}
+		ctrl.eventPublisher.Publish(newUserUpdatedEvent(session.Username, uint(userID), &request, true))
 		if htmx {
 			helper.TriggerCloseModal(c)
 			c.HTML(http.StatusOK, userRowFragment,

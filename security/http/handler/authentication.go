@@ -137,6 +137,7 @@ func (ctrl *Authentication) LogoutProcess() gin.HandlerFunc {
 	return func(c *gin.Context) { //nolint:varnamelen
 		session := helper.MustGetSession(c)
 		if err := ctrl.sessionService.DestroySession(c.Request.Context(), session); err != nil {
+			ctrl.eventPublisher.Publish(&dto.LogoutEvent{Username: session.Username, IsSuccess: false})
 			helper.FlashError(c, session, http.StatusInternalServerError, logoutErrMsg, helper.UnexpectedErrorMessageID, err)
 			c.Redirect(http.StatusFound, constants.HomePath)
 			return
@@ -144,6 +145,7 @@ func (ctrl *Authentication) LogoutProcess() gin.HandlerFunc {
 		c.Set(constants.SessionGinContextKey, nil)
 		c.SetSameSite(http.SameSiteStrictMode)
 		c.SetCookie(constants.SessionIDKey, "", -1, "/", ctrl.cookieDomain, ctrl.isSecureCookie, true)
+		ctrl.eventPublisher.Publish(&dto.LogoutEvent{Username: session.Username, IsSuccess: true})
 		c.Redirect(http.StatusFound, loginPath)
 	}
 }
