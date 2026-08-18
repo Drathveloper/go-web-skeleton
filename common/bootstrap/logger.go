@@ -10,7 +10,7 @@ import (
 )
 
 func setupLogger() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
 	slog.SetDefault(logger)
@@ -18,7 +18,7 @@ func setupLogger() {
 
 func configureLogger(container *wire.Container) {
 	confidentialFields := container.Store.GetLoggingConfidentialFields()
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: false,
 		Level:     container.Store.GetLoggingLevel(),
 		ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
