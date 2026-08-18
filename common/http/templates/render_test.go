@@ -3,6 +3,7 @@ package templates_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -18,9 +19,21 @@ import (
 // a missing one, and html/template only reports that at request time. Every
 // template the skeleton ships is executed here with representative data.
 
+// TestMain loads the catalogs once for the whole package.
+//
+// InitializeI18n writes a package-level map, so calling it from inside a
+// t.Parallel subtest is a data race: the suite passed, but only because
+// nothing observed the torn write. Loading here happens before any test
+// starts, which is also how the application does it.
+func TestMain(m *testing.M) {
+	if err := i18n.InitializeI18n(); err != nil {
+		panic("initialize i18n for the template tests failed: " + err.Error())
+	}
+	os.Exit(m.Run())
+}
+
 func newEngine(t *testing.T) *gin.Engine {
 	t.Helper()
-	require.NoError(t, i18n.InitializeI18n())
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
 	require.NoError(t, templates.InitializeTemplateRenderer(engine))
